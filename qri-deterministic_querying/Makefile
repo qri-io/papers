@@ -5,8 +5,8 @@
 
 # The following are likely to change.
 
-main_file = deterministic_querying.md
-bib_file  = deterministic_querying.bibtex
+main_file = v2.md
+bib_file  = v2.bibtex
 
 # The remainder below is not likely to need changes under most circumstances.
 
@@ -18,8 +18,7 @@ pandoc_args = \
 	--email-obfuscation=none \
 	--number-sections \
 	--mathjax \
-	--smart \
-	--toc
+	--smart
 
 output_file = $(main_file:.md=.html)
 
