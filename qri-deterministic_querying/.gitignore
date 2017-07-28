@@ -10,3 +10,9 @@
 *~
 .#*
 .git/COMMIT_EDITMSG
+
+
+# Directory-specific things.
+# ......................................................................
+
+deterministic_querying.html
