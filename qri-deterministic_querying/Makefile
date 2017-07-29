@@ -27,7 +27,7 @@ default $(output_file): $(main_file) $(bib_file)
 
 reload:;
 	make
-	open $(output_file)
+	reload-safari
 
 autorefresh:;
-	$(ls $(main_file) $(bib_file) | entr 'make reload') &
+	((ls $(main_file) $(bib_file) | entr make reload) &)
