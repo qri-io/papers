@@ -16,4 +16,4 @@ auto
 # Directory-specific things.
 # ......................................................................
 
-deterministic_querying.html
+*.html
