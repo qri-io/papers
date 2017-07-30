@@ -15,6 +15,7 @@ pandoc_args = \
 	--css=styles/github-markdown-css.css \
 	--csl=styles/apa-5th-edition.csl \
 	--bibliography $(bib_file) \
+        --metadata link-citations=true \
 	--email-obfuscation=none \
 	--number-sections \
 	--mathjax \
