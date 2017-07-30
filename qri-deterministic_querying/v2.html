@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="date" content="2017-07-29" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="styles/github-markdown-css.css" type="text/css" />
+</head>
+<body>
+<h1 align="center">
+Deterministic Querying for the Distributed Web
+</h1>
+<p align="center">
+<a href="http://www.brendan.nyc">Brendan O’Brien</a> – <a href="http://www.cds.caltech.edu/~mhucka/">Michael Hucka</a>
+</p>
+<p align="center">
+July 2017
+</p>
+<p align="center">
+<b>Abstract</b>
+</p>
+<p>The current infrastructure that underlies the distribution and processing of data on the Internet has enabled dramatic advances in a great variety of human endeavors. Unfortunately, while today’s technologies and architectures obviously do work, they also incorporate systemic inefficiencies that impede effective large-scale discovery, distribution, preservation and reuse of data sets. An important source of inefficiencies is rooted in the database-centered pipeline that underlies much of data processing on the Internet today. The ongoing transition to a <em>content-addressed permanent web</em> offers an opportunity to replace certain software architecture patterns with alternatives that are more efficient and scale more effectively. We focus on one such new pattern, <em>deterministic querying</em>, that combines formalized query definitions, formalized resource descriptions, linked metadata, hashing, and a content-addressed file system. The result supports database-free reuse of data and data processing output—and does so on the scale of the global Internet.</p>
+<h1 id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>Open data is a boon to research and progress. The continuing growth of data being made available on the Internet promises a windfall of benefits, enabling new discoveries, powering new innovations, and increasing transparency. The growth of open data has in part been driven by the open source movement, and in fact many of the principles espoused by open data advocates mirror those of open source efforts. However, open source efforts have at least one advantage currently over open data: an effective means of <em>accumulating results in a common pool</em> so that they can be reused rather than reinvented.</p>
+<p>Reuse is at the heart of open source. Developers are encouraged to share their work, and to seek out existing solutions to problems. As a result, open software builds upon other software, often by composing larger works out of smaller, reusable elements. This is possible because the reusable software elements—objects, functions, programs, modules—can be reused as static entities incorporated into other works. The software elements represent intellectual work: they are answers to questions. Open-source developers solve new problems in large part by seeking out answers to old questions and then using those answers to build their solutions. This works because software developers have developed precise mechanisms to describe the questions, the forms of the answers, and how to store and exchange them.</p>
+<p>By contrast, open data has no comparable means of composing solutions by building on old results. In a practical sense, users of data are constantly reinventing the same solutions: individuals consume datasets, perform operations on the data, and then interpret the results—but then often throw away the data produced by the operations. This happens because the processed data are either assumed to be of no value to anyone else, or the cost of storing, managing and sharing intermediate results is assumed to be higher than simply recomputing them on demand. The consequence is that answers to questions are not being shared, discovered or reused by other potential open data users.</p>
+<p>Central to the problem of treating open data as reusable components is that there is no obvious method for using the <em>output</em> of an open data process as the <em>input</em> to another open data process when the processes are not part of a common pipeline.</p>
+<!--
+provenance
+
+These limitations risk preventing future developments from reaching their potential. -->
+<h1 id="section"><span class="header-section-number">2</span> </h1>
+<h1 id="references" class="unnumbered">References</h1>
+<div id="refs" class="references">
+
+</div>
+</body>
+</html>
