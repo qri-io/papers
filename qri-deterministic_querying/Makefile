@@ -31,7 +31,7 @@ default $(output): $(main) $(bib)
 
 reload:;
 	make
-	reload-safari
+	open -g $(output)
 
 autorefresh:;
 	((ls $(main) $(bib) | entr make reload) &)
