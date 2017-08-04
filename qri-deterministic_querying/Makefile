@@ -8,7 +8,7 @@
 main      = v2.md
 bib       = v2.bibtex
 template  = templates/GitHub.html5
-bib_style = styles/acm-siggraph.csl
+bib_style = styles/modified-acm-siggraph.csl
 
 # The remainder below is not likely to need changes under most circumstances.
 
