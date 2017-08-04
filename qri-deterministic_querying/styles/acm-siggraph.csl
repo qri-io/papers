@@ -14,6 +14,13 @@
     <updated>2012-09-27T22:06:38+00:00</updated>
     <rights license="http://creativecommons.org/licenses/by-sa/3.0/">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights>
   </info>
+  <macro name="access">
+    <choose>
+      <if type="article-journal paper-conference book chapter report" match="any">
+        <text variable="DOI" prefix=" https://doi.org/"/>
+      </if>
+    </choose>
+  </macro>
   <macro name="author">
     <names variable="author">
       <name initialize-with="." delimiter=", " and="text" name-as-sort-order="all" sort-separator=", "/>
@@ -136,6 +143,7 @@
           <text variable="URL" prefix=" "/>
         </else>
       </choose>
+      <text macro="access"/>
     </layout>
   </bibliography>
 </style>
