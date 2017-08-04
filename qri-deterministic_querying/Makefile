@@ -6,9 +6,9 @@
 # The following are likely to change.
 
 main      = v2.md
-template  = templates/GitHub.html5
 bib       = v2.bibtex
-bib_style = styles/apa-5th-edition.csl
+template  = templates/GitHub.html5
+bib_style = styles/acm-siggraph.csl
 
 # The remainder below is not likely to need changes under most circumstances.
 
