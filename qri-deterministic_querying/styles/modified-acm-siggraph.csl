@@ -96,7 +96,7 @@
       </group>
     </layout>
   </citation>
-  <bibliography et-al-min="7" et-al-use-first="3" hanging-indent="true">
+  <bibliography et-al-min="100" et-al-use-first="10" hanging-indent="true">
     <sort>
       <key macro="author"/>
       <key variable="issued"/>
