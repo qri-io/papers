@@ -5,30 +5,33 @@
 
 # The following are likely to change.
 
-main_file = v2.md
-bib_file  = v2.bibtex
+main      = v2.md
+template  = templates/GitHub.html5
+bib       = v2.bibtex
+bib_style = styles/apa-5th-edition.csl
 
 # The remainder below is not likely to need changes under most circumstances.
 
 pandoc_args = \
 	-f markdown -t html \
-	--css=styles/github-markdown-css.css \
-	--csl=styles/apa-5th-edition.csl \
-	--bibliography $(bib_file) \
+	--template=$(template) \
+	--csl=$(bib_style) \
+	--bibliography $(bib) \
         --metadata link-citations=true \
 	--email-obfuscation=none \
 	--number-sections \
 	--mathjax \
+	--standalone \
 	--smart
 
-output_file = $(main_file:.md=.html)
+output = $(main:.md=.html)
 
-default $(output_file): $(main_file) $(bib_file)
-	pandoc $(pandoc_args) $(main_file) -o $(output_file)
+default $(output): $(main) $(bib)
+	pandoc $(pandoc_args) $(main) -o $(output)
 
 reload:;
 	make
 	reload-safari
 
 autorefresh:;
-	((ls $(main_file) $(bib_file) | entr make reload) &)
+	((ls $(main) $(bib) | entr make reload) &)
