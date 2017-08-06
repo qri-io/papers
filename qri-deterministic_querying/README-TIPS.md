@@ -6,7 +6,7 @@ This document uses only a minimum amount of extra Pandoc syntax so that it is re
 
 ## Rendering and viewing the HTML output
 
-* To render the HTML, a simple method is to use a command line that grabs the raw HTML from GitHub, saves it to a temporary file on the local computer, and calls `open` to open a browser on the file.  The following is a one-line command line to do this, suitable for use on macOS.
+* To view the rendered HTML file that is commited in the repository on GitHub (which can't be done in GitHub's web interface itself, because it will not render the HTML), a simple method is to use a command line that grabs the raw HTML from GitHub, saves it to a temporary file on the local computer, and calls `open` to open a browser on the file.  The following is a one-line command line to do this, suitable for use on macOS.
 
 ```csh
 curl -sS -o /tmp/tmp.html 'https://raw.githubusercontent.com/qri-io/papers/master/qri-deterministic_querying/v2.html?token=ABYgI2bsM8OoKZ8i2Clgm8RBQAqUeS5iks5ZjgiHwA%3D%3D' && open /tmp/tmp.html
