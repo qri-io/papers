@@ -9,7 +9,7 @@ This document uses only a minimum amount of extra Pandoc syntax so that it is re
 * To view the rendered HTML file that is commited in the repository on GitHub (which can't be done in GitHub's web interface itself, because it will not render the HTML), a simple method is to use a command line that grabs the raw HTML from GitHub, saves it to a temporary file on the local computer, and calls `open` to open a browser on the file.  The following is a one-line command line to do this, suitable for use on macOS.
 
 ```csh
-curl -sS -o /tmp/tmp.html 'https://raw.githubusercontent.com/qri-io/papers/master/qri-deterministic_querying/v2.html?token=ABYgI2bsM8OoKZ8i2Clgm8RBQAqUeS5iks5ZjgiHwA%3D%3D' && open /tmp/tmp.html
+curl -sS -o /tmp/tmp.html 'https://raw.githubusercontent.com/qri-io/papers/master/qri-deterministic_querying/v2.html?token=ABYgI0qpPVY_Ti3RcKc0kLWnvXjPja29ks5ZmmlCwA%3D%3D' && open /tmp/tmp.html
 ```
 * To simplify previewing the rendered HTML while simultaneously editing the Markdown `.md` source file locally, the `Makefile` provides a target named `autorefresh`.  It relies on an application called [entr](http://entrproject.org).  To use the `autorefresh` Makefile target, after installing `entr` on your computer, simply invoke `make autorefresh` in this directory, and open the document `.html` file in a browser.  Every time you save the `.md` or `.bibtex` file, it should refresh the browser view.
 
