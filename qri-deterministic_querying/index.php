@@ -1,1 +1,1 @@
-<!php include_once("v2.html"); ?>
+<?php include_once("./v2.html"); ?>
