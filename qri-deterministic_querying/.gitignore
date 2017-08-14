@@ -18,3 +18,4 @@ auto
 
 # Need to check in the HTML because we need to process it with pandoc.
 # *.html
+composer.lock
