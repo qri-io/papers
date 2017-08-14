@@ -29,9 +29,19 @@ output = $(main:.md=.html)
 default $(output): $(main) $(bib)
 	pandoc $(pandoc_args) $(main) -o $(output)
 
+autorefresh:;
+	((ls $(main) $(bib) | entr make reload) &)
+
 reload:;
 	make
 	open -g $(output)
 
-autorefresh:;
-	((ls $(main) $(bib) | entr make reload) &)
+heroku:
+	@if [ -n `git ls-files -m` ]; then \
+	  echo "* * * * * * * * * * * * * * * * * * * * * * * *"; \
+	  echo ""; \
+	  echo "Warning: uncommitted git changes remain."; \
+	  echo ""; \
+	  echo "* * * * * * * * * * * * * * * * * * * * * * * *"; \
+	fi
+	(cd ..; git subtree push --prefix qri-deterministic_querying heroku master)
