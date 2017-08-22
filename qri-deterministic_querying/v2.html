@@ -76,7 +76,7 @@ August 2017
 <p align="center">
 <img src="graphics/data-dataset-structure-query.png">
 </p>
-<h2 id="data-and-dataset"><span class="header-section-number">2.1</span> <code>Data</code> and <code>Dataset</code></h2>
+<h2 id="data-and-structure"><span class="header-section-number">2.1</span> <code>Data</code> and <code>Structure</code></h2>
 <!--
 This section could be called "schemas" or even "resources"; we avoid these terms because they are overused and may evoke unwanted associations.
 -->
@@ -88,11 +88,13 @@ This section could be called "schemas" or even "resources"; we avoid these terms
 <p>A <code>Data</code> object in a content-addressed file system will be a static object identified by a hash value (henceforth, to be called simply its <em>hash</em>). Assume that this data file resolves to the following hash on the network:</p>
 <pre><code>1220cb90f19d806704600e32b152afbad9fdfc91b0216e15585f9fc1044d44c72d5b</code></pre>
 <p>As discussed above, this hash will be unique: any file whose computed hash matches the one above <em>will contain the same content</em>, no matter how or where it was created (assuming we use the same conventions for line endings, spaces and some other details), or where it’s physically located in the content-addressed file system. We focus on widely-used formats such as CSV as foundational storage formats for developing deterministic querying, but the extensions to other types of data should be clear.</p>
-<p>Being able to interpret a given <code>Data</code> object requires additional information outside of the <code>Data</code> itself. This metadata is needed to provide precise details about how to interpret the content of a <code>Data</code> object. That is the purpose of <code>Dataset</code>.</p>
+<p>Being able to interpret a given <code>Data</code> object requires additional information outside of the <code>Data</code> itself. This information is needed to provide precise details about how to interpret the content of a <code>Data</code> object. That is the purpose of <code>Structure</code>.</p>
 <h2 id="structure"><span class="header-section-number">2.2</span> <code>Structure</code></h2>
 <h2 id="query"><span class="header-section-number">2.3</span> <code>Query</code></h2>
 <h2 id="query-execution"><span class="header-section-number">2.4</span> Query execution</h2>
 <!--
+
+structure/previous
 
 Put this as a final paragraph in this section 
 
