@@ -162,22 +162,41 @@ Finally, it is worth noting that we focus on widely-used formats such as CSV as 
 <p>As illustrated above, a <code>Dataset</code> references one <code>Data</code> and one <code>Structure</code> object, and it also adds additional descriptive metadata. A <code>Dataset</code> must resolve to one and only one <code>Data</code> entity; this is accomplished by using the unique hashes of the associated <code>Data</code> and <code>Structure</code> objects. This separation of concerns achieves two important goals:</p>
 <ol style="list-style-type: decimal">
 <li><p>The same data can be described by different metadata. For example, a repeated experiment may produce identical data, but it should be described differently if only to indicate different time stamps or conditions. Separating the description from the values saves storage and bandwidth because only the changes (the metadata) are stored separately.</p></li>
-<li><p>Metadata formats can be changed and updated independently. In many cases, data remains static after it is gathered. Software frameworks, however, often change rapidly, and developers and users find needs to change and update metadata about data. With this separation, metadata can be changed without changing the underlying data.</p></li>
+<li><p>Metadata formats can be changed and updated independently. In many cases, data remains static after it is gathered. Software frameworks, however, often change rapidly, and developers and users find needs to change and update metadata about data. With the separation described here, metadata can be changed without changing the underlying data objects. This not only save resources: it makes clear in a concrete way that <em>it is the same data</em>.</p></li>
 </ol>
 <p>To retain a trail of changes, <code>Dataset</code> contains a field called <code>previous</code> that references the hash of another <code>Dataset</code> object. This establishes a clear history of changes to any component of a data set, whether this is the metadata, or the <code>Data</code>, or the <code>Structure</code>. For example, when changes are made to metadata without changing the <code>Data</code> or its <code>Structure</code>, only the <code>Dataset</code> object needs to change:</p>
 <p align="center">
 <img src="graphics/metadata-changes.png">
 </p>
-<p>Conversely, if the <code>Data</code> changes but the <code>Structure</code> does not, the new <code>Dataset</code> object will also reference the hash of the new <code>Data</code> object:</p>
+<p>Conversely, if the <code>Data</code> changes but the <code>Structure</code> does not, the new <code>Dataset</code> object will reference the hash of a new <code>Data</code> object but point to the same <code>Structure</code>:</p>
 <p align="center">
 <img src="graphics/data-changes.png">
 </p>
-<p>Finally, if the <code>Structure</code> changes, the <code>Data</code> necessarily changes as well:</p>
+<p>Finally, if the <code>Structure</code> changes, the <code>Data</code> necessarily changes as well, which means the new <code>Dataset</code> object points to new <code>Structure</code> and <code>Data</code> objects. This indicates that the underlying data set has changed in such a way—either in structure or in values—that its hash signature is no longer the same.</p>
 <p align="center">
 <img src="graphics/structure-changes.png">
 </p>
-<p>In each case, the <code>Dataset</code> identifies the unique <code>Structure</code> object that defines the format of the data in the <code>Data</code> object(s), and the value of the <code>previous</code> has points to any previous <code>Dataset</code> definition that may have come before.</p>
+<p>In each case above, the <code>Dataset</code> identifies the unique <code>Structure</code> object that defines the format of the data in the <code>Data</code> object(s), and the value of the <code>previous</code> has points to any previous <code>Dataset</code> definition that may have come before.</p>
 <h2 id="query"><span class="header-section-number">2.3</span> <code>Query</code></h2>
+<p>In the abstract, information retrieval is the process of obtaining information from resources by posing questions <span class="citation">[Sanderson and Croft <a href="#ref-sanderson2012history">2012</a>]</span>. In contemporary computer terms, those “questions” are expressed in some formal language and acted upon by computer programs. Information can be retrieved from many different kinds of resources; when the resources are databases, we speak of <em>database queries</em>. We focus initially on the world’s most widely-used database query language, SQL (Structured Query Language), which has a long history <span class="citation">[Chamberlin <a href="#ref-chamberlin2009sql">2009</a>]</span>, a syntax standardized by ISO <span class="citation">[ISO/IEC JTC 1/SC 32 <a href="#ref-iso2016sql">2016</a>]</span>, and is the basis of very many database-powered software systems in the world today. As will become clear, the approach described here is not limited to SQL—any query language syntax that obeys similar principles and can be processed in similar ways can be used in deterministic queries.</p>
+<p>Queries written in SQL make reference to columns in a tabular database, and express conditions that values must satisfy to be selected. Here is an example:</p>
+<div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">SELECT</span> a.datestamp, a.lat, a.lng, a.precip <span class="kw">FROM</span> a <span class="kw">WHERE</span> a.precip &gt; <span class="fl">2.0</span></code></pre></div>
+<p>This query references a table in a database (<code>a</code>) and columns within that table (<code>a.datestamp</code>, <code>a.lat</code>, <code>a.lng</code>, <code>a.precip</code>), and stipulates a conditional expression (<code>a.precip &gt; 2.0</code>) that certain column values must satisfy. Note that this query knows nothing about the nature of the database: all that matters is that the table has four columns and the expression <code>a.precip &gt; 2.0</code> makes syntactic sense for the kinds of values in the table. Although labels such as <code>lat</code>, <code>lng</code> and <code>precip</code> may have meaning to human readers, in reality the labels in SQL have absolutely no semantic meaning to the database itself. This concept is nothing new—it is by design in SQL, so that database systems can be applied to many uses and types of data.</p>
+<p>Now suppose we separate the table column references in such a way that the query is written in an abstract, independent way, and the binding of table columns in the query to table columns in an actual data set is maintained separately. This <em>abstract query</em> can be written by establishing some conventions, for example to use labels of the form <code>col_0</code>, <code>col_1</code>, <code>col_2</code>, etc., for the table columns. An abstract query written in a standard form might look like this:</p>
+<div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">SELECT</span> a.col_0, a.col_1, a.col_2, a.col_3 <span class="kw">FROM</span> a <span class="kw">WHERE</span> a.precip &gt; <span class="fl">2.0</span></code></pre></div>
+<p>Now further suppose we define the shape of <code>a</code> using a <code>Structure</code> object, described above. This defines precisely the types of data values expected for each column in the query, as well as other properties of the data. And naturally, we can do the same for the <em>result</em> of the query: use another <code>Structure</code> object to describe the form of the data that the query will produce.</p>
+<p align="center">
+<img src="graphics/query.png">
+</p>
+<p>This query is now independent of the semantics of the data: it operates on the form of the data and can be applied to any data that matches the description in the <code>Structure</code> of the input. What’s more, assuming that we define clear rules for writing these queries in a standard, consistent form, the same query will <em>always have the same hash value</em> even if it is regenerated by different processes at different times in different locations. And of course, the <code>Structure</code> objects for both the input and output are defined by their hashes.</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
+  <span class="dt">&quot;syntax&quot;</span> <span class="fu">:</span> <span class="st">&quot;sql&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;structures&quot;</span> <span class="fu">:</span> <span class="fu">{</span>
+    <span class="dt">&quot;a&quot;</span> <span class="fu">:</span> <span class="st">&quot;1220c9bb19b66f7960b6ab7624b9e043969e2ba7181e834441c0303d872832d3fd50&quot;</span><span class="fu">,</span>
+  <span class="fu">},</span>
+  <span class="dt">&quot;statement&quot;</span> <span class="fu">:</span> <span class="st">&quot;SELECT a.col_0, a.col_1, a.col_2, a.col_3 FROM a WHERE a.precip &gt; 2.0&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;outputStructure&quot;</span> <span class="fu">:</span> <span class="st">&quot;1224c9bb19b441c0303d872832d3fd5066f7960b6ab7624b9e043969e2ba7181e834&quot;</span>
+<span class="fu">}</span></code></pre></div>
 <h2 id="query-execution"><span class="header-section-number">2.4</span> Query execution</h2>
 <!--
 
@@ -198,7 +217,7 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <h1 id="references" class="unnumbered">References</h1>
 <div id="refs" class="references">
 <div id="ref-auer2014linked">
-<p><span style="font-variant: small-caps;">Auer, S., Bryl, V., and Tramp, S.</span> 2014. <em>Linked open data–creating knowledge out of interlinked data: Results of the lod2 project</em>. Springer. <a href="https://doi.org/10.1007/978-3-319-09846-3" class="uri">https://doi.org/10.1007/978-3-319-09846-3</a>.</p>
+<p><span style="font-variant: small-caps;">Auer, S., Bryl, V., and Tramp, S.</span> 2014. <em>Linked open data–Creating knowledge out of interlinked data: Results of the lOD2 project</em>. Springer. <a href="https://doi.org/10.1007/978-3-319-09846-3" class="uri">https://doi.org/10.1007/978-3-319-09846-3</a>.</p>
 </div>
 <div id="ref-aurora2007code">
 <p><span style="font-variant: small-caps;">Aurora, V.</span> 2007. The code monkey’s guide to cryptographic hashes for content-based addressing. <em>LinuxWorld</em>.</p>
@@ -207,7 +226,7 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <p><span style="font-variant: small-caps;">Baack, S.</span> 2015. Datafication and empowerment: How the open data movement re-articulates notions of democracy, participation, and journalism. <em>Big Data &amp; Society</em> <em>2</em>, 2. <a href="https://doi.org/10.1177/2053951715594634" class="uri">https://doi.org/10.1177/2053951715594634</a>.</p>
 </div>
 <div id="ref-baumgart2007s">
-<p><span style="font-variant: small-caps;">Baumgart, I. and Mies, S.</span> 2007. S/kademlia: A practicable approach towards secure key-based routing. <em>International conference on parallel and distributed systems</em>, 1–8.</p>
+<p><span style="font-variant: small-caps;">Baumgart, I. and Mies, S.</span> 2007. S/Kademlia: A practicable approach towards secure key-based routing. <em>International conference on parallel and distributed systems</em>, 1–8.</p>
 </div>
 <div id="ref-benet2014ipfs">
 <p><span style="font-variant: small-caps;">Benet, J.</span> 2014. IPFS – content addressed, versioned, P2P file system. <em>Computing Resources Repository</em> <em>arXiv:1407.3561</em>.</p>
@@ -218,14 +237,17 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <div id="ref-vandenbosch2016estimating">
 <p><span style="font-variant: small-caps;">Bosch, A. van den, Bogers, T., and Kunder, M. de</span>. 2016. Estimating search engine index size variability: A 9-year longitudinal study. <em>Scientometrics</em> <em>107</em>, 839–856. <a href="https://doi.org/10.1007/s11192-016-1863-z" class="uri">https://doi.org/10.1007/s11192-016-1863-z</a>.</p>
 </div>
+<div id="ref-chamberlin2009sql">
+<p><span style="font-variant: small-caps;">Chamberlin, D.</span> 2009. SQL. In: <em>Encyclopedia of database systems</em>. Springer, 2753–2760. <a href="https://doi.org/10.1007/978-0-387-39940-9_1091" class="uri">https://doi.org/10.1007/978-0-387-39940-9_1091</a>.</p>
+</div>
 <div id="ref-cisco2017zettabyte">
 <p><span style="font-variant: small-caps;">Cisco</span>. 2017. <em>The zettabyte era: Trends and analysis</em>. Available on the World Wide Web at <a href="https://www.cisco.com/c/en/us/solutions/collateral/service-provider/visual-networking-index-vni/vni-hyperconnectivity-wp.html" class="uri">https://www.cisco.com/c/en/us/solutions/collateral/service-provider/visual-networking-index-vni/vni-hyperconnectivity-wp.html</a>.</p>
 </div>
 <div id="ref-crowston2008free">
-<p><span style="font-variant: small-caps;">Crowston, K., Wei, K., Howison, J., and Wiggins, A.</span> 2008. Free/libre open-source software development: What we know and what we do not know. <em>ACM Comput. Surv.</em> <em>44</em>, 2, 7:1–7:35. <a href="https://doi.org/10.1145/2089125.2089127" class="uri">https://doi.org/10.1145/2089125.2089127</a>.</p>
+<p><span style="font-variant: small-caps;">Crowston, K., Wei, K., Howison, J., and Wiggins, A.</span> 2008. Free/Libre open-source software development: What we know and what we do not know. <em>ACM Comput. Surv.</em> <em>44</em>, 2, 7:1–7:35. <a href="https://doi.org/10.1145/2089125.2089127" class="uri">https://doi.org/10.1145/2089125.2089127</a>.</p>
 </div>
 <div id="ref-elghandour2012restore">
-<p><span style="font-variant: small-caps;">Elghandour, I. and Aboulnaga, A.</span> 2012. ReStore: Reusing results of mapreduce jobs. <em>Proceedings of the VLDB Endowment</em> <em>5</em>, 6, 586–597. <a href="https://doi.org/10.14778/2168651.2168659" class="uri">https://doi.org/10.14778/2168651.2168659</a>.</p>
+<p><span style="font-variant: small-caps;">Elghandour, I. and Aboulnaga, A.</span> 2012. ReStore: Reusing results of mapReduce jobs. <em>Proceedings of the VLDB Endowment</em> <em>5</em>, 6, 586–597. <a href="https://doi.org/10.14778/2168651.2168659" class="uri">https://doi.org/10.14778/2168651.2168659</a>.</p>
 </div>
 <div id="ref-ferguson2014big">
 <p><span style="font-variant: small-caps;">Ferguson, A.R., Nielson, J.L., Cragin, M.H., Bandrowski, A.E., and Martone, M.E.</span> 2014. Big data from small data: Data-sharing in the ’long tail’ of neuroscience. <em>Nature Neuroscience</em> <em>17</em>, 11, 1442–1447. <a href="https://doi.org/10.1038/nn.3838" class="uri">https://doi.org/10.1038/nn.3838</a>.</p>
@@ -241,6 +263,9 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 </div>
 <div id="ref-heath2011linked">
 <p><span style="font-variant: small-caps;">Heath, T. and Bizer, C.</span> 2011. <em>Linked data: Evolving the web into a global data space</em>. Morgan &amp; Claypool.</p>
+</div>
+<div id="ref-iso2016sql">
+<p><span style="font-variant: small-caps;"><span>ISO</span>/IEC JTC 1/SC 32</span>. 2016. <em>Information technology — database languages — SQL — part 1: Framework (SQL/Framework)</em>. International Organization for Standardization.</p>
 </div>
 <div id="ref-kansakar2016review">
 <p><span style="font-variant: small-caps;">Kansakar, P. and Hossain, F.</span> 2016. A review of applications of satellite earth observation data for global societal benefit and stewardship of planet earth. <em>Space Policy</em> <em>36</em>, 46–54. <a href="https://doi.org/10.1016/j.spacepol.2016.05.005" class="uri">https://doi.org/10.1016/j.spacepol.2016.05.005</a>.</p>
@@ -289,6 +314,9 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 </div>
 <div id="ref-ipld2017">
 <p><span style="font-variant: small-caps;">Protocol Labs</span>. 2017b. IPLD home page. <a href="https://ipld.io" class="uri">https://ipld.io</a>.</p>
+</div>
+<div id="ref-sanderson2012history">
+<p><span style="font-variant: small-caps;">Sanderson, M. and Croft, W.B.</span> 2012. The history of information retrieval research. <em>Proceedings of the IEEE</em> <em>100</em>, 1444–1451. <a href="https://doi.org/10.1109/jproc.2012.2189916" class="uri">https://doi.org/10.1109/jproc.2012.2189916</a>.</p>
 </div>
 <div id="ref-shafranovich2005common">
 <p><span style="font-variant: small-caps;">Shafranovich, Y.</span> 2005. <em>Common format and MIME type for comma-separated values (CSV) files</em>. Available on the World Wide Web at <a href="https://tools.ietf.org/html/rfc4180" class="uri">https://tools.ietf.org/html/rfc4180</a>; IETF.</p>
