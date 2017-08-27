@@ -122,8 +122,8 @@ This section could be called "schemas" or even "resources"; we avoid these terms
 60.00,-50.049303,349034,2017-02-14,precip measurement one
 60.00,-50.049303,430004,2017-02-15,precip measurement two
 ...</code></pre>
-<p>A <code>Data</code> object in a content-addressed file system will be a static object identified by a hash value (henceforth, to be called simply its <em>hash</em>). Assume that this data file resolves to the following hash on the network:</p>
-<pre><code>1220cb90f19d806704600e32b152afbad9fdfc91b0216e15585f9fc1044d44c72d5b</code></pre>
+<p>A <code>Data</code> object in a content-addressed file system will be a static object identified by a hash value (henceforth, to be called simply its <em>hash</em>). Assume that this data file resolves to the following base58-encoded hash on the network:</p>
+<pre><code>QmNk2XkDpn8vBantgpHt6B52kcyfHcQVJUF4QzDqjiGu52</code></pre>
 <p>As discussed above, this hash will be unique: any file whose computed hash matches the one above <em>will contain the same content</em>, no matter how or where it was created (assuming we use the same conventions for line endings, spaces and some other details), or where it’s physically located in the content-addressed file system. Queries to this data file will always run against the same set of bytes because the hash is <em>deterministic</em>.</p>
 <p>Being able to interpret the bytes in a given <code>Data</code> object requires additional information outside of the <code>Data</code> itself. This information is needed to provide precise details about how to interpret the content of a <code>Data</code> object. That is the purpose of <code>Structure</code>. It contains fields that indicate such things as the format of a <code>Data</code> object, the character encoding, compression settings, and other details. Here is an example shown in a human-readable JSON format:</p>
 <div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
@@ -192,10 +192,10 @@ Finally, it is worth noting that we focus on widely-used formats such as CSV as 
 <div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
   <span class="dt">&quot;syntax&quot;</span> <span class="fu">:</span> <span class="st">&quot;sql&quot;</span><span class="fu">,</span>
   <span class="dt">&quot;structures&quot;</span> <span class="fu">:</span> <span class="fu">{</span>
-    <span class="dt">&quot;a&quot;</span> <span class="fu">:</span> <span class="st">&quot;1220c9bb19b66f7960b6ab7624b9e043969e2ba7181e834441c0303d872832d3fd50&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;a&quot;</span> <span class="fu">:</span> <span class="st">&quot;/ipfs/QmNxLFUUvPEY55E1DGLmBKJa51CmHAuoUqfLE6CetxqvvV&quot;</span><span class="fu">,</span>
   <span class="fu">},</span>
-  <span class="dt">&quot;statement&quot;</span> <span class="fu">:</span> <span class="st">&quot;SELECT a.col_0, a.col_1, a.col_2, a.col_3 FROM a WHERE a.precip &gt; 2.0&quot;</span><span class="fu">,</span>
-  <span class="dt">&quot;outputStructure&quot;</span> <span class="fu">:</span> <span class="st">&quot;1224c9bb19b441c0303d872832d3fd5066f7960b6ab7624b9e043969e2ba7181e834&quot;</span>
+  <span class="dt">&quot;statement&quot;</span> <span class="fu">:</span> <span class="st">&quot;SELECT a.col_0, a.col_1, a.col_2, a.col_3 FROM a WHERE a.col_3 &gt; 2.0&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;outputStructure&quot;</span> <span class="fu">:</span> <span class="st">&quot;/ipfs/QmP6XohRBYc8y52dpyJsANYq1SZBzy618t388Wk2SPKNG9&quot;</span>
 <span class="fu">}</span></code></pre></div>
 <h2 id="query-execution"><span class="header-section-number">2.4</span> Query execution</h2>
 <p>Excuting a query is conceptually simple, and requires only a consistent procedure for the process. A query engine can proceed roughly as follows:</p>
@@ -242,7 +242,7 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <h1 id="references" class="unnumbered">References</h1>
 <div id="refs" class="references">
 <div id="ref-auer2014linked">
-<p><span style="font-variant: small-caps;">Auer, S., Bryl, V., and Tramp, S.</span> 2014. <em>Linked open data–Creating knowledge out of interlinked data: Results of the lOD2 project</em>. Springer. <a href="https://doi.org/10.1007/978-3-319-09846-3" class="uri">https://doi.org/10.1007/978-3-319-09846-3</a>.</p>
+<p><span style="font-variant: small-caps;">Auer, S., Bryl, V., and Tramp, S.</span> 2014. <em>Linked open data–creating knowledge out of interlinked data: Results of the lod2 project</em>. Springer. <a href="https://doi.org/10.1007/978-3-319-09846-3" class="uri">https://doi.org/10.1007/978-3-319-09846-3</a>.</p>
 </div>
 <div id="ref-aurora2007code">
 <p><span style="font-variant: small-caps;">Aurora, V.</span> 2007. The code monkey’s guide to cryptographic hashes for content-based addressing. <em>LinuxWorld</em>.</p>
@@ -251,7 +251,7 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <p><span style="font-variant: small-caps;">Baack, S.</span> 2015. Datafication and empowerment: How the open data movement re-articulates notions of democracy, participation, and journalism. <em>Big Data &amp; Society</em> <em>2</em>, 2. <a href="https://doi.org/10.1177/2053951715594634" class="uri">https://doi.org/10.1177/2053951715594634</a>.</p>
 </div>
 <div id="ref-baumgart2007s">
-<p><span style="font-variant: small-caps;">Baumgart, I. and Mies, S.</span> 2007. S/Kademlia: A practicable approach towards secure key-based routing. <em>International conference on parallel and distributed systems</em>, 1–8.</p>
+<p><span style="font-variant: small-caps;">Baumgart, I. and Mies, S.</span> 2007. S/kademlia: A practicable approach towards secure key-based routing. <em>International conference on parallel and distributed systems</em>, 1–8.</p>
 </div>
 <div id="ref-benet2014ipfs">
 <p><span style="font-variant: small-caps;">Benet, J.</span> 2014. IPFS – content addressed, versioned, P2P file system. <em>Computing Resources Repository</em> <em>arXiv:1407.3561</em>.</p>
@@ -269,10 +269,10 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <p><span style="font-variant: small-caps;">Cisco</span>. 2017. <em>The zettabyte era: Trends and analysis</em>. Available on the World Wide Web at <a href="https://www.cisco.com/c/en/us/solutions/collateral/service-provider/visual-networking-index-vni/vni-hyperconnectivity-wp.html" class="uri">https://www.cisco.com/c/en/us/solutions/collateral/service-provider/visual-networking-index-vni/vni-hyperconnectivity-wp.html</a>.</p>
 </div>
 <div id="ref-crowston2008free">
-<p><span style="font-variant: small-caps;">Crowston, K., Wei, K., Howison, J., and Wiggins, A.</span> 2008. Free/Libre open-source software development: What we know and what we do not know. <em>ACM Comput. Surv.</em> <em>44</em>, 2, 7:1–7:35. <a href="https://doi.org/10.1145/2089125.2089127" class="uri">https://doi.org/10.1145/2089125.2089127</a>.</p>
+<p><span style="font-variant: small-caps;">Crowston, K., Wei, K., Howison, J., and Wiggins, A.</span> 2008. Free/libre open-source software development: What we know and what we do not know. <em>ACM Comput. Surv.</em> <em>44</em>, 2, 7:1–7:35. <a href="https://doi.org/10.1145/2089125.2089127" class="uri">https://doi.org/10.1145/2089125.2089127</a>.</p>
 </div>
 <div id="ref-elghandour2012restore">
-<p><span style="font-variant: small-caps;">Elghandour, I. and Aboulnaga, A.</span> 2012. ReStore: Reusing results of mapReduce jobs. <em>Proceedings of the VLDB Endowment</em> <em>5</em>, 6, 586–597. <a href="https://doi.org/10.14778/2168651.2168659" class="uri">https://doi.org/10.14778/2168651.2168659</a>.</p>
+<p><span style="font-variant: small-caps;">Elghandour, I. and Aboulnaga, A.</span> 2012. ReStore: Reusing results of mapreduce jobs. <em>Proceedings of the VLDB Endowment</em> <em>5</em>, 6, 586–597. <a href="https://doi.org/10.14778/2168651.2168659" class="uri">https://doi.org/10.14778/2168651.2168659</a>.</p>
 </div>
 <div id="ref-ferguson2014big">
 <p><span style="font-variant: small-caps;">Ferguson, A.R., Nielson, J.L., Cragin, M.H., Bandrowski, A.E., and Martone, M.E.</span> 2014. Big data from small data: Data-sharing in the ’long tail’ of neuroscience. <em>Nature Neuroscience</em> <em>17</em>, 11, 1442–1447. <a href="https://doi.org/10.1038/nn.3838" class="uri">https://doi.org/10.1038/nn.3838</a>.</p>
@@ -290,7 +290,7 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <p><span style="font-variant: small-caps;">Heath, T. and Bizer, C.</span> 2011. <em>Linked data: Evolving the web into a global data space</em>. Morgan &amp; Claypool.</p>
 </div>
 <div id="ref-iso2016sql">
-<p><span style="font-variant: small-caps;"><span>ISO</span>/IEC JTC 1/SC 32</span>. 2016. <em>Information technology — database languages — SQL — part 1: Framework (SQL/Framework)</em>. International Organization for Standardization.</p>
+<p><span style="font-variant: small-caps;"><span>ISO</span>/IEC JTC 1/SC 32</span>. 2016. <em>Information technology — database languages — SQL — part 1: Framework (SQL/framework)</em>. International Organization for Standardization.</p>
 </div>
 <div id="ref-kansakar2016review">
 <p><span style="font-variant: small-caps;">Kansakar, P. and Hossain, F.</span> 2016. A review of applications of satellite earth observation data for global societal benefit and stewardship of planet earth. <em>Space Policy</em> <em>36</em>, 46–54. <a href="https://doi.org/10.1016/j.spacepol.2016.05.005" class="uri">https://doi.org/10.1016/j.spacepol.2016.05.005</a>.</p>
