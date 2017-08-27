@@ -122,11 +122,12 @@ This section could be called "schemas" or even "resources"; we avoid these terms
 60.00,-50.049303,349034,2017-02-14,precip measurement one
 60.00,-50.049303,430004,2017-02-15,precip measurement two
 ...</code></pre>
-<p>A <code>Data</code> object in a content-addressed file system will be a static object identified by a hash value (henceforth, to be called simply its <em>hash</em>). Assume that this data file resolves to the following base58-encoded hash on the network:</p>
+<p>A <code>Data</code> object in a content-addressed file system will be a static object identified by a hash value (henceforth, to be called simply its <em>hash</em>). Assume that this data file resolves to the following base58-encoded <span class="citation">[Gagern et al. <a href="#ref-vonGagern2017base58">2017</a>]</span> hash on the network:</p>
 <pre><code>QmNk2XkDpn8vBantgpHt6B52kcyfHcQVJUF4QzDqjiGu52</code></pre>
 <p>As discussed above, this hash will be unique: any file whose computed hash matches the one above <em>will contain the same content</em>, no matter how or where it was created (assuming we use the same conventions for line endings, spaces and some other details), or where it’s physically located in the content-addressed file system. Queries to this data file will always run against the same set of bytes because the hash is <em>deterministic</em>.</p>
-<p>Being able to interpret the bytes in a given <code>Data</code> object requires additional information outside of the <code>Data</code> itself. This information is needed to provide precise details about how to interpret the content of a <code>Data</code> object. That is the purpose of <code>Structure</code>. It contains fields that indicate such things as the format of a <code>Data</code> object, the character encoding, compression settings, and other details. Here is an example shown in a human-readable JSON format:</p>
+<p>Being able to interpret the bytes in a given <code>Data</code> object requires additional information outside of the <code>Data</code> itself. This information is needed to provide precise details about how to interpret the content of a <code>Data</code> object. That is the purpose of <code>Structure</code>. It contains fields that indicate such things as the format of a <code>Data</code> object, the character encoding, compression settings, and other details. Here is an example expressed in a human-readable JSON format:</p>
 <div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
+  <span class="dt">&quot;qri&quot;</span> <span class="fu">:</span> <span class="st">&quot;1.0&quot;</span><span class="fu">,</span>
   <span class="dt">&quot;format&quot;</span> <span class="fu">:</span> <span class="st">&quot;text/csv&quot;</span><span class="fu">,</span>
   <span class="dt">&quot;formatConfig&quot;</span> <span class="fu">:</span> <span class="fu">{</span>
     <span class="dt">&quot;delimiter&quot;</span><span class="fu">:</span> <span class="st">&quot;,&quot;</span><span class="fu">,</span>
@@ -148,8 +149,8 @@ This section could be called "schemas" or even "resources"; we avoid these terms
     <span class="ot">]</span>
   <span class="fu">},</span>
 <span class="fu">}</span></code></pre></div>
-<p>The specification of <code>Structure</code> is given elsewhere, but as the example illustrates, it contains information that enables software and users to read the content of a <code>Data</code> object. For example, <code>format</code> specifies how the data is stored; the field value is a MIME type value (e.g., <code>&quot;text/csv&quot;</code> for CSV <span class="citation">[Shafranovich <a href="#ref-shafranovich2005common">2005</a>]</span>). The related field <code>formatConfig</code> removes as much ambiguity as possible about how to interpret the specified <code>format</code> because some formats have a number of dialects, and variants need to be identified exactly.</p>
-<p>The field <code>schema</code> merits some additional explanation. Many formats such as CSV do not internally define the data types of values and have no standard way of communicating this information, which forces the requirement to define an approach for externalizing it outside of a <code>Data</code> file. It turns out, however, that describing the format explicitly in a generalized way makes it possible to store and reuse those descriptions independently: they become another object in the content-addressed storage space, hashed and stored like everything else.</p>
+<p>The detailed specification of <code>Structure</code> is given elsewhere, but as the example above illustrates, a <code>Structure</code> contains information that enables software and users to read the content of a <code>Data</code> object. For example, <code>format</code> specifies how the data is stored; the field value is a MIME type value (e.g., <code>&quot;text/csv&quot;</code> for CSV <span class="citation">[Shafranovich <a href="#ref-shafranovich2005common">2005</a>]</span>). The related field <code>formatConfig</code> removes as much ambiguity as possible about how to interpret the specified <code>format</code> because some formats have a number of dialects, and variants need to be identified exactly.</p>
+<p>The field <code>schema</code> merits some additional explanation. Many formats such as CSV do not internally define the data types of values and provide no standard way of communicating this information, which forces the requirement to define an approach for externalizing it outside of a <code>Data</code> file. It turns out, however, that describing the format explicitly in a generalized way also makes it possible to store and reuse those descriptions independently: they become another object in the content-addressed storage space, hashed and stored like everything else.</p>
 <p>In fact, <code>Structure</code> is abstracted in such a way that it contains nothing about <em>meaning</em>. If the values of a <code>Data</code> file change, the <code>Structure</code> can remain the same; if multiple <code>Data</code> objects anywhere on an IPFS network all have the same structure, the <code>Structure</code> object can remain the same. <em>This is true even if the <code>Data</code> objects are about entirely different things</em>. As will become more clear below, this is part of the fundamental insight that makes deterministic querying possible.</p>
 <!--
 Finally, it is worth noting that we focus on widely-used formats such as CSV as foundational storage formats for developing deterministic querying, but the extensions to other types of data should be clear.
@@ -177,32 +178,35 @@ Finally, it is worth noting that we focus on widely-used formats such as CSV as 
 <img src="graphics/structure-changes.png">
 </p>
 <p>In each case above, the <code>Dataset</code> identifies the unique <code>Structure</code> object that defines the format of the data in the <code>Data</code> object(s), and the value of the <code>previous</code> has points to any previous <code>Dataset</code> definition that may have come before.</p>
+<p>There are additional fields in <code>Dataset</code>; these are discussed further below.</p>
 <h2 id="query"><span class="header-section-number">2.3</span> <code>Query</code></h2>
 <p>In the abstract, information retrieval is the process of obtaining information from resources by posing questions <span class="citation">[Sanderson and Croft <a href="#ref-sanderson2012history">2012</a>]</span>. In contemporary computer terms, those “questions” are expressed in some formal language and acted upon by computer programs. Information can be retrieved from many different kinds of resources; when the resources are databases, we speak of <em>database queries</em>. We focus initially on the world’s most widely-used database query language, SQL (Structured Query Language), which has a long history <span class="citation">[Chamberlin <a href="#ref-chamberlin2009sql">2009</a>]</span>, a syntax standardized by ISO <span class="citation">[ISO/IEC JTC 1/SC 32 <a href="#ref-iso2016sql">2016</a>]</span>, and is the basis of very many database-powered software systems in the world today. As will become clear, the approach described here is not limited to SQL—any query language syntax that obeys similar principles and can be processed in similar ways can be used in deterministic queries.</p>
 <p>Queries written in SQL make reference to columns in a tabular database, and express conditions that values must satisfy to be selected. Here is an example:</p>
 <div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">SELECT</span> a.datestamp, a.lat, a.lng, a.precip <span class="kw">FROM</span> a <span class="kw">WHERE</span> a.precip &gt; <span class="fl">2.0</span></code></pre></div>
-<p>This query references a table in a database (<code>a</code>) and columns within that table (<code>a.datestamp</code>, <code>a.lat</code>, <code>a.lng</code>, <code>a.precip</code>), and stipulates a conditional expression (<code>a.precip &gt; 2.0</code>) that certain column values must satisfy. Note that this query knows nothing about the nature of the database: all that matters is that the table has four columns and the expression <code>a.precip &gt; 2.0</code> makes syntactic sense for the kinds of values in the table. Although labels such as <code>lat</code>, <code>lng</code> and <code>precip</code> may have meaning to human readers, in reality the labels in SQL have absolutely no semantic meaning to the database itself. This concept is nothing new—it is by design in SQL, so that database systems can be applied to many uses and types of data.</p>
-<p>Now suppose we separate the table column references in such a way that the query is written in an abstract, independent way, and the binding of table columns in the query to table columns in an actual data set is maintained separately. This <em>abstract query</em> can be written by establishing some conventions, for example to use labels of the form <code>col_0</code>, <code>col_1</code>, <code>col_2</code>, etc., for the table columns. An abstract query written in a standard form might look like this:</p>
+<p>This query references a table in a database (<code>a</code>) and columns within that table (<code>a.datestamp</code>, <code>a.lat</code>, <code>a.lng</code>, <code>a.precip</code>), and stipulates a conditional expression (<code>a.precip &gt; 2.0</code>) that certain column values must satisfy. Note that this query knows nothing about the purpose of the database: all that matters is that the table has four columns and the expression <code>a.precip &gt; 2.0</code> makes syntactic sense for the kinds of values in the table. Although labels such as <code>lat</code>, <code>lng</code> and <code>precip</code> may have meaning to human readers, in reality the labels in SQL have absolutely no semantic meaning to the database itself. This concept is nothing new—it is by design in SQL, so that database systems can be applied to many uses and types of data.</p>
+<p>Now suppose we separate the table column references in such a way that the query is written in an abstract, data-agnostic way, and the binding of table columns in the query to table columns in an actual data set is maintained separately. This <em>abstract query</em> can be written by establishing some conventions, for example to use labels of the form <code>col_0</code>, <code>col_1</code>, <code>col_2</code>, etc., for the table columns. An abstract query written in a standard form might look like this:</p>
 <div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">SELECT</span> a.col_0, a.col_1, a.col_2, a.col_3 <span class="kw">FROM</span> a <span class="kw">WHERE</span> a.precip &gt; <span class="fl">2.0</span></code></pre></div>
-<p>Now further suppose we define the shape of <code>a</code> using a <code>Structure</code> object, described above. This defines precisely the types of data values expected for each column in the query, as well as other properties of the data. And naturally, we can do the same for the <em>result</em> of the query: use another <code>Structure</code> object to describe the form of the data that the query will produce.</p>
+<p>Now further suppose that we define the shape of <code>a</code> using a <code>Structure</code> object, described above. This defines precisely the types of data values expected for each column in the query, as well as other properties of the data. And naturally, we can do the same for the <em>result</em> of the query: use another <code>Structure</code> object to describe the form of the data that the query will produce.</p>
 <p align="center">
 <img src="graphics/query.png">
 </p>
 <p>This query is now independent of the semantics of the data: it operates on the form of the data and can be applied to any data that matches the description in the <code>Structure</code> of the input. What’s more, assuming that we define clear rules for writing these queries in a standard, consistent form, the same query will <em>always have the same hash value</em> even if it is regenerated by different processes at different times in different locations. And of course, the <code>Structure</code> objects for both the input and output are defined by their hashes.</p>
 <div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
-  <span class="dt">&quot;syntax&quot;</span> <span class="fu">:</span> <span class="st">&quot;sql&quot;</span><span class="fu">,</span>
-  <span class="dt">&quot;structures&quot;</span> <span class="fu">:</span> <span class="fu">{</span>
+  <span class="dt">&quot;qri&quot;</span> <span class="fu">:</span> <span class="st">&quot;1.0&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;inputStructures&quot;</span> <span class="fu">:</span> <span class="fu">{</span>
     <span class="dt">&quot;a&quot;</span> <span class="fu">:</span> <span class="st">&quot;/ipfs/QmNxLFUUvPEY55E1DGLmBKJa51CmHAuoUqfLE6CetxqvvV&quot;</span><span class="fu">,</span>
   <span class="fu">},</span>
+  <span class="dt">&quot;syntax&quot;</span> <span class="fu">:</span> <span class="st">&quot;application/sql&quot;</span><span class="fu">,</span>
   <span class="dt">&quot;statement&quot;</span> <span class="fu">:</span> <span class="st">&quot;SELECT a.col_0, a.col_1, a.col_2, a.col_3 FROM a WHERE a.col_3 &gt; 2.0&quot;</span><span class="fu">,</span>
   <span class="dt">&quot;outputStructure&quot;</span> <span class="fu">:</span> <span class="st">&quot;/ipfs/QmP6XohRBYc8y52dpyJsANYq1SZBzy618t388Wk2SPKNG9&quot;</span>
 <span class="fu">}</span></code></pre></div>
+<p>The field <code>syntax</code> is a MIME media type string <span class="citation">[Freed et al. <a href="#ref-freed2013media">2013</a>]</span> indicating the syntax of the query statement. The media type for SQL <span class="citation">[Shafranovich <a href="#ref-shafranovich2013application">2013</a>]</span> is used here as an example.</p>
 <h2 id="query-execution"><span class="header-section-number">2.4</span> Query execution</h2>
-<p>Excuting a query is conceptually simple, and requires only a consistent procedure for the process. A query engine can proceed roughly as follows:</p>
+<p>Excuting a query is conceptually simple, and requires only a consistent procedure for the process. After a user’s database query is obtained from an external mechanism (such as a user interface, or another software system), a query engine can proceed roughly as follows:</p>
 <ol style="list-style-type: decimal">
-<li><p>A user’s database query is obtained from an external mechanism (such as a user interface, or another software system). The concrete, specific query expression and any data that it refers to are used to create an initial <code>Dataset</code> object with references to <code>Data</code> hashes as needed.</p></li>
+<li><p>The result of processing a query will be a <code>Dataset</code> object, so query processing begins with a blank <code>Dataset</code>. The engine records the original, concrete query expression in the field <code>queryString</code>. The data referenced by the query are recorded as in the field <code>resources</code> as a set of other <code>Dataset</code> objects.</p></li>
 <li><p>The original query is parsed to produce internal Abstract Syntax Tree (AST) representation (a standard approach for parsing and manipulating structured languages).</p></li>
-<li><p>The query engine rewrites the AST. First, it examines the different parts of the query AST and processes any aliasing statements (e.g., an expression such as <code>SELECT foo AS bar ...</code> in SQL) or other modifications. The engine rewrites the AST to produce a “pure” version of the original query in which indirections and aliases have been removed. It then records the mappings between entities such as tables and columns in <code>Data</code> objects; this is done for both the inputs and outputs of the query expression. Finally, it rewrites the AST to convert data resource references into abstract resource references. In our example above, this is the step that converts query references like <code>a.datestamp</code> into <code>a.col_0</code>.</p></li>
+<li><p>The query engine rewrites the AST. First, it examines the different parts of the query AST and processes any aliasing statements (e.g., an expression such as <code>SELECT foo AS bar ...</code> in SQL) or other modifications. The engine rewrites the AST to produce a “pure” version of the original query in which indirections and aliases have been removed. It then records the mappings between entities such as tables and columns in <code>Data</code> objects; this is done for both the inputs and outputs of the query expression. Finally, it rewrites the AST to convert data resource references into abstract resource references. In our example above, this is the step that converts query references like <code>a.datestamp</code> into <code>a.col_0</code>. This is written in the field <code>statement</code> in the <code>Dataset</code> object.</p></li>
 <li><p>Next, the engine executes the query.</p></li>
 <li><p>The query engine writes the results to IPFS as a <code>Dataset</code> object, writing the <code>Data</code>, <code>Query</code> and <code>Structure</code> hash references into the <code>Dataset</code>, and saving the output <code>Data</code> too.</p></li>
 </ol>
@@ -210,9 +214,74 @@ Finally, it is worth noting that we focus on widely-used formats such as CSV as 
 <img src="graphics/query-processing.png">
 </p>
 <h2 id="query-output"><span class="header-section-number">2.5</span> Query output</h2>
-<p><strong>TO BE COMPLETED—STILL UNCLEAR HOW THIS PART WORKS</strong></p>
+<p>The result of a query is another <code>Dataset</code> object and potentially a new <code>Data</code> object referenced by it. This form of <code>Dataset</code> makes use of a few additional fields. The example below illustrates a complete result.</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
+  <span class="dt">&quot;queryString&quot;</span><span class="fu">:</span> <span class="st">&quot;SELECT name, latitude_deg, longitude_deg, elevation_ft FROM airport_codes&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;resources&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+    <span class="dt">&quot;airport_codes&quot;</span><span class="fu">:</span> <span class="st">&quot;/ipfs/QmaPAxymKpMQDFjneKs8XRvrTWQF4gLbaenBQtB4MmSE46&quot;</span>
+  <span class="fu">},</span>
+  <span class="dt">&quot;query&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+    <span class="dt">&quot;statement&quot;</span><span class="fu">:</span> <span class="st">&quot;SELECT a.col_2, a.col_3, a.col_4, a.col_5 FROM a&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;inputStructures&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+      <span class="dt">&quot;a&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+        <span class="dt">&quot;format&quot;</span><span class="fu">:</span> <span class="st">&quot;csv&quot;</span><span class="fu">,</span>
+        <span class="dt">&quot;formatConfig&quot;</span><span class="fu">:</span> <span class="fu">{</span> <span class="dt">&quot;headerRow&quot;</span><span class="fu">:</span> <span class="kw">true</span> <span class="fu">},</span>
+        <span class="dt">&quot;schema&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+          <span class="dt">&quot;fields&quot;</span><span class="fu">:</span> <span class="ot">[</span>
+            <span class="fu">{</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;col_0&quot;</span><span class="fu">,</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;string&quot;</span> <span class="fu">}</span><span class="ot">,</span>
+            <span class="fu">{</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;col_1&quot;</span><span class="fu">,</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;string&quot;</span> <span class="fu">}</span><span class="ot">,</span>
+            <span class="fu">{</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;col_2&quot;</span><span class="fu">,</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;string&quot;</span> <span class="fu">}</span><span class="ot">,</span>
+            <span class="fu">{</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;col_3&quot;</span><span class="fu">,</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;float&quot;</span> <span class="fu">}</span><span class="ot">,</span>
+            <span class="fu">{</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;col_4&quot;</span><span class="fu">,</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;float&quot;</span> <span class="fu">}</span><span class="ot">,</span>
+            <span class="fu">{</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;col_5&quot;</span><span class="fu">,</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;float&quot;</span> <span class="fu">}</span>
+          <span class="ot">]</span>
+        <span class="fu">}</span>
+      <span class="fu">}</span>
+    <span class="fu">},</span>
+    <span class="dt">&quot;outputStructure&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+      <span class="dt">&quot;format&quot;</span><span class="fu">:</span> <span class="st">&quot;csv&quot;</span><span class="fu">,</span>
+      <span class="dt">&quot;formatConfig&quot;</span><span class="fu">:</span> <span class="fu">{</span> <span class="dt">&quot;headerRow&quot;</span><span class="fu">:</span> <span class="kw">false</span> <span class="fu">},</span>
+      <span class="dt">&quot;schema&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+        <span class="dt">&quot;fields&quot;</span><span class="fu">:</span> <span class="ot">[</span>
+          <span class="fu">{</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;col_2&quot;</span><span class="fu">,</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;string&quot;</span> <span class="fu">}</span><span class="ot">,</span>
+          <span class="fu">{</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;col_3&quot;</span><span class="fu">,</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;float&quot;</span> <span class="fu">}</span><span class="ot">,</span>
+          <span class="fu">{</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;col_4&quot;</span><span class="fu">,</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;float&quot;</span> <span class="fu">}</span><span class="ot">,</span>
+          <span class="fu">{</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;col_5&quot;</span><span class="fu">,</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;float&quot;</span> <span class="fu">}</span>
+        <span class="ot">]</span>
+      <span class="fu">}</span>
+    <span class="fu">},</span>
+    <span class="dt">&quot;syntax&quot;</span> <span class="fu">:</span> <span class="st">&quot;application/sql&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;qri&quot;</span> <span class="fu">:</span> <span class="st">&quot;1.0&quot;</span><span class="fu">,</span>
+  <span class="fu">},</span>
+  <span class="dt">&quot;structure&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+    <span class="dt">&quot;format&quot;</span><span class="fu">:</span> <span class="st">&quot;text/csv&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;formatConfig&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+      <span class="dt">&quot;headerRow&quot;</span><span class="fu">:</span> <span class="kw">false</span>
+    <span class="fu">},</span>
+    <span class="dt">&quot;schema&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+      <span class="dt">&quot;fields&quot;</span><span class="fu">:</span> <span class="ot">[</span>
+        <span class="fu">{</span>
+          <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;name&quot;</span><span class="fu">,</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;string&quot;</span> <span class="fu">}</span><span class="ot">,</span> <span class="fu">{</span>
+          <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;latitude_deg&quot;</span><span class="fu">,</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;float&quot;</span> <span class="fu">}</span><span class="ot">,</span> <span class="fu">{</span>
+          <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;longitude_deg&quot;</span><span class="fu">,</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;float&quot;</span> <span class="fu">}</span><span class="ot">,</span> <span class="fu">{</span>
+          <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;elevation_ft&quot;</span><span class="fu">,</span> <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;float&quot;</span> <span class="fu">}</span> <span class="ot">]</span>
+    <span class="fu">}</span>
+  <span class="fu">},</span>
+  <span class="dt">&quot;data&quot;</span><span class="fu">:</span> <span class="st">&quot;/ipfs/QmQg6LPcPTxrgDmhYpvCZSgDR7KJKjtveyDGp1T4583afp&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;length&quot;</span><span class="fu">:</span> <span class="dv">2341472</span><span class="fu">,</span>
+  <span class="dt">&quot;timestamp&quot;</span><span class="fu">:</span> <span class="st">&quot;2017-08-27T13:14:10.479631674-04:00&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;title&quot;</span><span class="fu">:</span> <span class="st">&quot;&quot;</span>
+<span class="fu">}</span></code></pre></div>
+<p>This brings all of the elements together: the fields for the concrete <code>query_string</code> and the <code>resources</code> it referenced, the <code>query</code> field holding the <code>Query</code> object, and the <code>structure</code> and <code>data</code> that indicate the results of running the query, with a <code>length</code> field to inform readers of the size of the data referenced by <code>data</code>. Note how the original query statement in <code>queryString</code> references a specific table name, <code>&quot;airport_codes&quot;</code>; this is linked to a resource by the corresponding value inside the <code>resources</code> field.</p>
+<p>A <code>Dataset</code> contains numerous additional metadata fields that provide context and useful information about the nature of what the query is about. A timestamp and title round out the example above, but other metadata fields exist.</p>
 <h2 id="requirements-for-metadata-interoperability"><span class="header-section-number">2.6</span> Requirements for metadata interoperability</h2>
-<p>Aside from the caveat of using content-addressed identifiers instead of urls, it is an express design goal that first-order metadata be collected with an eye toward supporting existing metadata formats, deriving as many hard-earned lessons as possible from the Collections, Libraries, Archives &amp; Muesum communities (CLAM). Datasets can and should support arbitrary metadata, but at the same time must place restrictions on the use of reserved keywords. These restrictions will be designed to maximize the potential to transpose dataset metadata into a number of existing archival metadata formats, including the Data Catalog vocabulary <span class="citation">[W3C <a href="#ref-dcat2014">2014</a>]</span>, the open knowledge foundation datapackage format, schema.org, and the CKAN/DKAN, dataverse apis. by making use of same-term metata wherever possible, and placing restrictions on fields that intersect &amp; cover the minimums of these formats, we leave open the potential to write libraries that transpose dataset data between all of these specifications.</p>
+<p>A <code>Dataset</code> is where metadata about data and data operations is stored. It is an express design goal of this scheme that it can support, at minimum, first-order metadata formats that are in use today. We want to build on as many hard-earned lessons as possible from the Collections, Libraries, Archives &amp; Museum communities (CLAM) for archival needs.</p>
+<p>The challenge is that while <code>Dataset</code> can and should support arbitrary metadata, it must also must place some restrictions on the use of reserved keywords. The approach followed here is influenced by Project Open Data <span class="citation">[Data <a href="#ref-pod2017resources">2017</a>]</span>; we compare the metadata fields used in several prominent metadata formats, and select a subset that can cover the minimum of many formats using a common set of terms whenever possible. We focus in particular on the Data Catalog vocabulary <span class="citation">[W3C <a href="#ref-dcat2014">2014</a>]</span>, CKAN/DKAN <span class="citation">[CKAN Association <a href="#ref-ckan2017">2017</a>]</span>, Schema.org <span class="citation">[Guha et al. <a href="#ref-guha2016schema">2016</a>; Schema.org <a href="#ref-schema_org_2012">2012</a>]</span>, the Open Knowledge Foundation datapackage <span class="citation">[Frictionless Data <a href="#ref-frictionlessdata2017">2017</a>]</span> format, and the DataVerse APIs <span class="citation">[Crosas <a href="#ref-crosas2011dataverse">2011</a>; King <a href="#ref-king2007introduction">2007</a>]</span>. By making use of same-term metadata wherever possible, and placing restrictions on fields that intersect and cover the minimum information across these formats, we leave open the potential to write software libraries that can translate <code>Dataset</code> metadata to/from all of these metadata standards.</p>
+<!--
+FIXME not sure if this is still needed:
+
+Aside from the caveat of using content-addressed identifiers instead of URLs, it is an express design goal that first-order metadata supported in datasets in this scheme be collected with an eye toward supporting existing metadata formats.
+-->
 <h1 id="properties-of-deterministic-querying"><span class="header-section-number">3</span> Properties of deterministic querying</h1>
 <p>The combination of IPFS and the machinery described above gives us the following. First, raw data in a file is <em>permanently</em>, <em>uniquely</em> identified by a cryptographic hash: given such a hash, we can retrieve the corresponding <code>Data</code> object from IPFS and we can be sure that what we get is the data set that was stored at that hash. Second, describe the format of a raw data file using a reusable <code>Structure</code> object that provides information about the shape and other characteristics of the data. Like the data itself, the definition is hashed to IPFS, giving it a permanent, unique identifier. Third, a connection between a given <code>Structure</code> and a <code>Data</code> object, along with associated metadata, is stored in a <code>Dataset</code> object that uses the unique hashes to identify the data and the structure definition unambiguously. Finally, data queries and transformations are expressed in a canonical form using a reusable <code>Query</code> object that is defined in terms of <code>Structure</code> rather than specific data sets, thus making it reusable—and this, too, is hashed to IPFS.</p>
 <p>With this in place, we also have <em>deterministic results</em>. Upon successfully executing a query, we can write the query and its resulting data to the network; the results will be one or more <code>Data</code> object, described by one or more <code>Structure</code> object. The results are deterministic because <em>any software using the same data, structure definition, and query definition, will obtain the same results</em>, regardless of where, when or why it is done.</p>
@@ -242,7 +311,7 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <h1 id="references" class="unnumbered">References</h1>
 <div id="refs" class="references">
 <div id="ref-auer2014linked">
-<p><span style="font-variant: small-caps;">Auer, S., Bryl, V., and Tramp, S.</span> 2014. <em>Linked open data–creating knowledge out of interlinked data: Results of the lod2 project</em>. Springer. <a href="https://doi.org/10.1007/978-3-319-09846-3" class="uri">https://doi.org/10.1007/978-3-319-09846-3</a>.</p>
+<p><span style="font-variant: small-caps;">Auer, S., Bryl, V., and Tramp, S.</span> 2014. <em>Linked open data–Creating knowledge out of interlinked data: Results of the lOD2 project</em>. Springer. <a href="https://doi.org/10.1007/978-3-319-09846-3" class="uri">https://doi.org/10.1007/978-3-319-09846-3</a>.</p>
 </div>
 <div id="ref-aurora2007code">
 <p><span style="font-variant: small-caps;">Aurora, V.</span> 2007. The code monkey’s guide to cryptographic hashes for content-based addressing. <em>LinuxWorld</em>.</p>
@@ -251,7 +320,7 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <p><span style="font-variant: small-caps;">Baack, S.</span> 2015. Datafication and empowerment: How the open data movement re-articulates notions of democracy, participation, and journalism. <em>Big Data &amp; Society</em> <em>2</em>, 2. <a href="https://doi.org/10.1177/2053951715594634" class="uri">https://doi.org/10.1177/2053951715594634</a>.</p>
 </div>
 <div id="ref-baumgart2007s">
-<p><span style="font-variant: small-caps;">Baumgart, I. and Mies, S.</span> 2007. S/kademlia: A practicable approach towards secure key-based routing. <em>International conference on parallel and distributed systems</em>, 1–8.</p>
+<p><span style="font-variant: small-caps;">Baumgart, I. and Mies, S.</span> 2007. S/Kademlia: A practicable approach towards secure key-based routing. <em>International conference on parallel and distributed systems</em>, 1–8.</p>
 </div>
 <div id="ref-benet2014ipfs">
 <p><span style="font-variant: small-caps;">Benet, J.</span> 2014. IPFS – content addressed, versioned, P2P file system. <em>Computing Resources Repository</em> <em>arXiv:1407.3561</em>.</p>
@@ -268,20 +337,41 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <div id="ref-cisco2017zettabyte">
 <p><span style="font-variant: small-caps;">Cisco</span>. 2017. <em>The zettabyte era: Trends and analysis</em>. Available on the World Wide Web at <a href="https://www.cisco.com/c/en/us/solutions/collateral/service-provider/visual-networking-index-vni/vni-hyperconnectivity-wp.html" class="uri">https://www.cisco.com/c/en/us/solutions/collateral/service-provider/visual-networking-index-vni/vni-hyperconnectivity-wp.html</a>.</p>
 </div>
+<div id="ref-ckan2017">
+<p><span style="font-variant: small-caps;">CKAN Association</span>. 2017. <em>CKAN</em>. Available on the World Wide Web at <a href="https://ckan.org" class="uri">https://ckan.org</a>.</p>
+</div>
+<div id="ref-crosas2011dataverse">
+<p><span style="font-variant: small-caps;">Crosas, M.</span> 2011. The dataverse network: An open-source application for sharing, discovering and preserving data. <em>D-Lib Magazine</em> <em>17</em>, 1/2. <a href="https://doi.org/10.1045/january2011-crosas" class="uri">https://doi.org/10.1045/january2011-crosas</a>.</p>
+</div>
 <div id="ref-crowston2008free">
-<p><span style="font-variant: small-caps;">Crowston, K., Wei, K., Howison, J., and Wiggins, A.</span> 2008. Free/libre open-source software development: What we know and what we do not know. <em>ACM Comput. Surv.</em> <em>44</em>, 2, 7:1–7:35. <a href="https://doi.org/10.1145/2089125.2089127" class="uri">https://doi.org/10.1145/2089125.2089127</a>.</p>
+<p><span style="font-variant: small-caps;">Crowston, K., Wei, K., Howison, J., and Wiggins, A.</span> 2008. Free/Libre open-source software development: What we know and what we do not know. <em>ACM Comput. Surv.</em> <em>44</em>, 2, 7:1–7:35. <a href="https://doi.org/10.1145/2089125.2089127" class="uri">https://doi.org/10.1145/2089125.2089127</a>.</p>
+</div>
+<div id="ref-pod2017resources">
+<p><span style="font-variant: small-caps;">Data, P.O.</span> 2017. <em>Metadata resources for schema v1.1</em>. Available on the World Wide Web at <a href="https://project-open-data.cio.gov/v1.1/metadata-resources/" class="uri">https://project-open-data.cio.gov/v1.1/metadata-resources/</a>.</p>
 </div>
 <div id="ref-elghandour2012restore">
-<p><span style="font-variant: small-caps;">Elghandour, I. and Aboulnaga, A.</span> 2012. ReStore: Reusing results of mapreduce jobs. <em>Proceedings of the VLDB Endowment</em> <em>5</em>, 6, 586–597. <a href="https://doi.org/10.14778/2168651.2168659" class="uri">https://doi.org/10.14778/2168651.2168659</a>.</p>
+<p><span style="font-variant: small-caps;">Elghandour, I. and Aboulnaga, A.</span> 2012. ReStore: Reusing results of mapReduce jobs. <em>Proceedings of the VLDB Endowment</em> <em>5</em>, 6, 586–597. <a href="https://doi.org/10.14778/2168651.2168659" class="uri">https://doi.org/10.14778/2168651.2168659</a>.</p>
 </div>
 <div id="ref-ferguson2014big">
 <p><span style="font-variant: small-caps;">Ferguson, A.R., Nielson, J.L., Cragin, M.H., Bandrowski, A.E., and Martone, M.E.</span> 2014. Big data from small data: Data-sharing in the ’long tail’ of neuroscience. <em>Nature Neuroscience</em> <em>17</em>, 11, 1442–1447. <a href="https://doi.org/10.1038/nn.3838" class="uri">https://doi.org/10.1038/nn.3838</a>.</p>
 </div>
+<div id="ref-freed2013media">
+<p><span style="font-variant: small-caps;">Freed, N., Klensin, J., and Hansen, T.</span> 2013. <em>Media type specifications and registration procedures</em>. Available on the World Wide Web at <a href="https://tools.ietf.org/html/rfc6838" class="uri">https://tools.ietf.org/html/rfc6838</a>; Internet Engineering Task Force (IETF).</p>
+</div>
 <div id="ref-freedman2004democratizing">
 <p><span style="font-variant: small-caps;">Freedman, M.J., Freudenthal, E., and Mazières, D.</span> 2004. Democratizing content publication with Coral. <em>Proceedings of the 1st conference on symposium on networked systems design and implementation</em>, USENIX Association, 18–18.</p>
 </div>
+<div id="ref-frictionlessdata2017">
+<p><span style="font-variant: small-caps;">Frictionless Data</span>. 2017. <em>Data packages</em>. Available on the World Wide Web at <a href="http://frictionlessdata.io/data-packages/" class="uri">http://frictionlessdata.io/data-packages/</a>.</p>
+</div>
+<div id="ref-vonGagern2017base58">
+<p><span style="font-variant: small-caps;">Gagern, M. von, Roose, S., Cary, D., Danford, J., and Dingley, A.</span> 2017. <em>Base58</em>. Available on the World Wide Web at <a href="https://en.wikipedia.org/wiki/Base58" class="uri">https://en.wikipedia.org/wiki/Base58</a>; Wikipedia.</p>
+</div>
 <div id="ref-gewin2016data">
 <p><span style="font-variant: small-caps;">Gewin, V.</span> 2016. Data sharing: An open mind on open data. <em>Nature</em> <em>529</em>, 7584, 117–119. <a href="https://doi.org/10.1038/nj7584-117a" class="uri">https://doi.org/10.1038/nj7584-117a</a>.</p>
+</div>
+<div id="ref-guha2016schema">
+<p><span style="font-variant: small-caps;">Guha, R.V., Brickley, D., and Macbeth, S.</span> 2016. Schema.org: Evolution of structured data on the web. <em>Communications of the ACM</em> <em>59</em>, 2, 44–51. <a href="https://doi.org/10.1145/2857274.2857276" class="uri">https://doi.org/10.1145/2857274.2857276</a>.</p>
 </div>
 <div id="ref-haefliger2008code">
 <p><span style="font-variant: small-caps;">Haefliger, S., Krogh, G. von, and Spaeth, S.</span> 2008. Code reuse in open source software. <em>Management Science</em> <em>54</em>, 1, 180–193. <a href="https://doi.org/10.1287/mnsc.1070.0748" class="uri">https://doi.org/10.1287/mnsc.1070.0748</a>.</p>
@@ -290,10 +380,13 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <p><span style="font-variant: small-caps;">Heath, T. and Bizer, C.</span> 2011. <em>Linked data: Evolving the web into a global data space</em>. Morgan &amp; Claypool.</p>
 </div>
 <div id="ref-iso2016sql">
-<p><span style="font-variant: small-caps;"><span>ISO</span>/IEC JTC 1/SC 32</span>. 2016. <em>Information technology — database languages — SQL — part 1: Framework (SQL/framework)</em>. International Organization for Standardization.</p>
+<p><span style="font-variant: small-caps;"><span>ISO</span>/IEC JTC 1/SC 32</span>. 2016. <em>Information technology — database languages — SQL — part 1: Framework (SQL/Framework)</em>. International Organization for Standardization.</p>
 </div>
 <div id="ref-kansakar2016review">
 <p><span style="font-variant: small-caps;">Kansakar, P. and Hossain, F.</span> 2016. A review of applications of satellite earth observation data for global societal benefit and stewardship of planet earth. <em>Space Policy</em> <em>36</em>, 46–54. <a href="https://doi.org/10.1016/j.spacepol.2016.05.005" class="uri">https://doi.org/10.1016/j.spacepol.2016.05.005</a>.</p>
+</div>
+<div id="ref-king2007introduction">
+<p><span style="font-variant: small-caps;">King, G.</span> 2007. An introduction to the dataverse network as an infrastructure for data sharing. <em>Sociological Methods &amp; Research</em> <em>36</em>, 2, 173–199.</p>
 </div>
 <div id="ref-klimek2016linkedpipes">
 <p><span style="font-variant: small-caps;">Klímek, J., Helmich, J., and Nečaský, M.</span> 2016. LinkedPipes visualization: Simple useful linked data visualization use cases. <em>International semantic web conference</em>, 112–117. <a href="https://doi.org/10.1007/978-3-319-47602-5_23" class="uri">https://doi.org/10.1007/978-3-319-47602-5_23</a>.</p>
@@ -343,8 +436,14 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <div id="ref-sanderson2012history">
 <p><span style="font-variant: small-caps;">Sanderson, M. and Croft, W.B.</span> 2012. The history of information retrieval research. <em>Proceedings of the IEEE</em> <em>100</em>, 1444–1451. <a href="https://doi.org/10.1109/jproc.2012.2189916" class="uri">https://doi.org/10.1109/jproc.2012.2189916</a>.</p>
 </div>
+<div id="ref-schema_org_2012">
+<p><span style="font-variant: small-caps;">Schema.org</span>. 2012. <em>Schema.org</em>. Available on the World Wide Web at <a href="http://schema.org/" class="uri">http://schema.org/</a>.</p>
+</div>
 <div id="ref-shafranovich2005common">
 <p><span style="font-variant: small-caps;">Shafranovich, Y.</span> 2005. <em>Common format and MIME type for comma-separated values (CSV) files</em>. Available on the World Wide Web at <a href="https://tools.ietf.org/html/rfc4180" class="uri">https://tools.ietf.org/html/rfc4180</a>; IETF.</p>
+</div>
+<div id="ref-shafranovich2013application">
+<p><span style="font-variant: small-caps;">Shafranovich, Y.</span> 2013. <em>The application/sql media type</em>. Available on the World Wide Web at <a href="https://tools.ietf.org/rfc/rfc6922.txt" class="uri">https://tools.ietf.org/rfc/rfc6922.txt</a>; Internet Engineering Task Force (IETF).</p>
 </div>
 <div id="ref-sojer2010code">
 <p><span style="font-variant: small-caps;">Sojer, M. and Henkel, J.</span> 2010. Code reuse in open source software development: Quantitative evidence, drivers, and impediments. <em>Journal of the Association for Information Systems</em> <em>11</em>, 12, 868–901.</p>
