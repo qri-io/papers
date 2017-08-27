@@ -198,14 +198,18 @@ Finally, it is worth noting that we focus on widely-used formats such as CSV as 
   <span class="dt">&quot;outputStructure&quot;</span> <span class="fu">:</span> <span class="st">&quot;1224c9bb19b441c0303d872832d3fd5066f7960b6ab7624b9e043969e2ba7181e834&quot;</span>
 <span class="fu">}</span></code></pre></div>
 <h2 id="query-execution"><span class="header-section-number">2.4</span> Query execution</h2>
-<!--
-
-structure/previous
-
-Put this as a final paragraph in this section 
-
-In the spirit of Open Data, it's important to acknowledge and support uses outside of these techniques.  Storing data in common formats reduces friction, allowing data to flow freely between ecosystems.  It is my view that the performance penalties incurred by storing data in common formats are worth paying in favor of interoperability.  Some of these performance penalties can be compensated for through sidecar lookup tables, which represent a future area of research.
--->
+<p>Excuting a query is conceptually simple, and requires only a consistent procedure for the process. A query engine can proceed roughly as follows:</p>
+<ol style="list-style-type: decimal">
+<li><p>A user’s database query is obtained from an external mechanism (such as a user interface, or another software system). The concrete, specific query expression and any data that it refers to are used to create an initial <code>Dataset</code> object with references to <code>Data</code> hashes as needed.</p></li>
+<li><p>The original query is parsed to produce internal Abstract Syntax Tree (AST) representation (a standard approach for parsing and manipulating structured languages).</p></li>
+<li><p>The query engine rewrites the AST. First, it examines the different parts of the query AST and processes any aliasing statements (e.g., an expression such as <code>SELECT foo AS bar ...</code> in SQL) or other modifications. The engine rewrites the AST to produce a “pure” version of the original query in which indirections and aliases have been removed. It then records the mappings between entities such as tables and columns in <code>Data</code> objects; this is done for both the inputs and outputs of the query expression. Finally, it rewrites the AST to convert data resource references into abstract resource references. In our example above, this is the step that converts query references like <code>a.datestamp</code> into <code>a.col_0</code>.</p></li>
+<li><p>Next, the engine executes the query.</p></li>
+<li><p>The query engine writes the results to IPFS as a <code>Dataset</code> object, writing the <code>Data</code>, <code>Query</code> and <code>Structure</code> hash references into the <code>Dataset</code>, and saving the output <code>Data</code> too.</p></li>
+</ol>
+<p align="center">
+<img src="graphics/query-processing.png">
+</p>
+<h2 id="query-output"><span class="header-section-number">2.5</span> Query output</h2>
 <h1 id="distributed-queries-linked-data"><span class="header-section-number">3</span> Distributed queries, linked data</h1>
 <p>Schemes for linking distributed data sets also exist, particularly in the form of Linked Data <span class="citation">[Heath and Bizer <a href="#ref-heath2011linked">2011</a>]</span>, but the methods of querying and accessing data currently involve database access and retrieval. With the approach outlined here, the result of any operation upon a dataset is a structure that can be utilized by any number of outside tools capable of parsing widely-adopted formats. It is an explicit design goal to present natural interoperability. It should be possible to traverse all recorded operations without the use of any database technology.</p>
 <p>By forcing the database to output to a standard format, the version or entire applicaiton that operates on a dataset can change at any step in the history of changes to a dataset, so long as it maintains the key linked-data characteristics. This makes it possible to chain use of different tools together that operate on the same graph of datasets, selecting the most appropriate tool for a given task. These common formats also provide a degree of future-proofing, allowing the results of using a tool to be utilized long after the usefulness of the tool itself has expired.</p>
@@ -213,6 +217,12 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <h2 id="metadata-interoporability"><span class="header-section-number">3.1</span> Metadata Interoporability</h2>
 <p>Aside from the caveat of using content-addressed identifiers instead of urls, it is an express design goal that first-order metadata be collected with an eye toward supporting existing metadata formats, deriving as many hard-earned lessons as possible from the Collections, Libraries, Archives &amp; Muesum communities (CLAM). Datasets can and should support arbitrary metadata, but at the same time must place restrictions on the use of reserved keywords. These restrictions will be designed to maximize the potential to transpose dataset metadata into a number of existing archival metadata formats, including the Data Catalog vocabulary <span class="citation">[W3C <a href="#ref-dcat2014">2014</a>]</span>, the open knowledge foundation datapackage format, schema.org, and the CKAN/DKAN, dataverse apis. by making use of same-term metata wherever possible, and placing restrictions on fields that intersect &amp; cover the minimums of these formats, we leave open the potential to write libraries that transpose dataset data between all of these specifications.</p>
 <h1 id="discussion"><span class="header-section-number">4</span> Discussion</h1>
+<!--
+
+Put this somewhere
+
+In the spirit of Open Data, it's important to acknowledge and support uses outside of these techniques.  Storing data in common formats reduces friction, allowing data to flow freely between ecosystems.  It is my view that the performance penalties incurred by storing data in common formats are worth paying in favor of interoperability.  Some of these performance penalties can be compensated for through sidecar lookup tables, which represent a future area of research.
+-->
 <!-- Refs are added automatically by Pandoc after this next section -->
 <h1 id="references" class="unnumbered">References</h1>
 <div id="refs" class="references">
