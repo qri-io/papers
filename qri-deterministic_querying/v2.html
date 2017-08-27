@@ -72,7 +72,7 @@ Deterministic Querying for the Distributed Web
 <a href="http://www.brendan.nyc">Brendan O’Brien</a><br> <a href="http://www.cds.caltech.edu/~mhucka/">Michael Hucka</a>
 </p>
 <p align="center">
-August 2017
+August 2017<br> <em>DRAFT</em>
 </p>
 <p align="center">
 <b>Abstract</b>
@@ -288,7 +288,11 @@ Aside from the caveat of using content-addressed identifiers instead of URLs, it
 <p>This leads to several useful properties, described below.</p>
 <h2 id="discoverability"><span class="header-section-number">3.1</span> Discoverability</h2>
 <p>The fact that the results of a query follow a consistent protocol and are written permanently to IPFS means that if the results of a query have already been computed and stored, other software systems can discover the results <em>before</em> they attempt to compute them. What’s more, since the results are described using lightweight <code>Structure</code> and <code>Dataset</code> objects, users can make these discoveries without downloading potentially large data sets. Thus, before excuting a query, a software tool can calculate the hash of the <code>Query</code> and check IPFS for the existence of that hash value. If it exists, the results may be loaded from the network instead of being recomputed.</p>
-<p>There is an additional, even more powerful implication than the simple savings in computations. Given a results hash … <strong>TO BE COMPLETED—STILL UNCLEAR HOW THIS PART WORKS</strong></p>
+<!--
+2017-08-27 decided to leave this out for now.  This requires tracking queries, which Qri does, but is not a deterministic querying concept per se.
+
+There is an additional, even more powerful implication than the simple savings in computations.  Given a results hash ... **TO BE COMPLETED---STILL UNCLEAR HOW THIS PART WORKS**
+-->
 <h2 id="immutability-and-defensibility"><span class="header-section-number">3.2</span> Immutability and defensibility</h2>
 <p>In many data use scenarios, it is important to know that a given data set has not been altered. This is often difficult to ensure. For example, a URL may refer to a data set on the web, and the resource holding that data set may claim that it is the original data stored in that file at that URL—but it could have been corrupted or purposefully altered, and for most of the popular data formats in use today, it would be difficult for the recipient to discover this.</p>
 <p>The use of a cryptographic hashes to identify data virtually eliminates this possibility. If you publish the hash of a given data set in IPFS, it is permanent: if you obtain the data set that someone claims is the corresponding data for the hash you give them, you can compute hash of the given data file yourself and verify that it has not been altered. Moreover, in the deterministic querying scheme, this immutability applies not only to the data, but to <em>the entire chain of processes that produce results</em> from one set of <code>Data</code> objects to others.</p>
