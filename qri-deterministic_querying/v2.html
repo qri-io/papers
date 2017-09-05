@@ -304,7 +304,32 @@ Aside from the caveat of using content-addressed identifiers instead of URLs, it
 <span class="fu">}</span></code></pre></div>
 <p>In this form, it is always possible to trace query-derived dataset back to its source data for as long as the data remains on the network. So long as all necessary query engines, platforms, and hashes are present, it should be possible to traverse machine replicate a query graph completely.</p>
 <p>This query graph can then be written as an IPLD graph, thereby allowing IPFS-native traversal of this query graph as well as opening up a number of opportunities for interoperability with other tools that may in turn produce resources that contribute back to this query graph by different means.</p>
-<h2 id="linking-to-other-distributed-frameworks"><span class="header-section-number">4.2</span> Linking to other distributed frameworks</h2>
+<h2 id="hash-collision-discovery"><span class="header-section-number">4.2</span> Hash Collision &amp; Discovery</h2>
+<p>So the question stands, why go to all this effort calculating “pure” queries and “abstract” structures? The advantage of using these abstract forms becomes clear when isolated &amp; placed on a content-addressed network. At time of addition, we separate out the abstract structure as an independant file &amp; write it to the network, which gives us a concrete hash. For example, assuming an abstract structure has the following hash:</p>
+<pre><code>QmeSYHbiK6p1Hxtd5opsc9KvJqbzMnJ1ZNmL3u5A6oMM3W</code></pre>
+<p>Instead of storing the concrete abstract structure in the dataset, we store reference to this hash.</p>
+<pre><code>{
+  &quot;name&quot; : &quot;&quot;,
+  ...
+  &quot;structure&quot; : {
+    ...
+  }
+  &quot;abstractStructure&quot; : &quot;/ipfs/QmeSYHbiK6p1Hxtd5opsc9KvJqbzMnJ1ZNmL3u5A6oMM3W&quot;
+}</code></pre>
+<p>Sometime later, we come upon another dataset who’s abstract structure is the same. When true, the hash of the abstract structure will <em>collide</em> with the previous hash. Once stored on the network, we can determine that these two datasets are machine-interoperable through simple string comparison. These datasets may in fact not be directly relatable due to practical differences in data collection methods or other conventions (which will hopefully be annotated in the concrete dataset strcture defintinions), but through this process we gain the crucial knowledge that these two datasets are interoperable at the machine level.</p>
+<p align="center">
+<img src="graphics/shared_abstract_structures.png">
+</p>
+<p>This collision property creates a naturally-occuring traversable graph if data interchangability. Given any collection of datasets, it is possible to “discover” if any of datasets are interchangable through comparison of their abstract structures. This represents a step forward in getting data “stacking” to work.</p>
+<p>We take this concept one step further by having queries store references to abstract structures. If the first dataset is used in a query we know with confidence that we can run the second dataset through the same query.</p>
+<p align="center">
+<img src="graphics/shared_abstract_structure_in_query.png">
+</p>
+<p>In this form, queries become reusable. Anyone who has written a nontrivial SQL query can attest to the desire to maximize the value of this labour.</p>
+<h2 id="structure-query-analysis"><span class="header-section-number">4.3</span> Structure &amp; Query Analysis</h2>
+<p>While this natural interoperability is of great benefit to end users, a secondary benefit arises over time as the abstract structure &amp; query address space is populated. These abstract forms limit the size of the hash space that will be consumed to a meaninfully small number of permutations. As more dataset &amp; queries are added to the network, we can collect &amp; analyze this address space for additional insights. Enumerating the frequency of occurance of different types of abstract structures will allow us to build tools that steer datasets toward these naturally arising common-forms, which will add to the collective usefulness of these forms.</p>
+<p>We can leverage this abstract interoperability to cut across different subjects of research. Because structures from vastly different areas of research may share the same abstract structure, they are natrually connected by the network. In this form, a number of “false positive” connections will naturally arise, showing the interoperability of seemingly unrelated datasets from dramatically different areas of research. With deterministic querying it is entirely possible that, for example, gorilla population data may hash-collide with data on the population of the city of London. While this may seem nonsensical, we believe this form of toll-free comparibility will encourage users to conceive of entirely new uses for data that had gone previously undiscovered. Combined with machine learning (particulary random forest decision trees), it is possible to have a computer chase down any number of these data comparison permutations looking for new insights from hard-earned data &amp; queries.</p>
+<h2 id="linking-to-other-distributed-frameworks"><span class="header-section-number">4.4</span> Linking to other distributed frameworks</h2>
 <p>Content addressing via hashes is not limited to IPFS: git, Ethereum and other distributed systems also use content addressing via hashes. IPLD is designed in such a way that it can work with other hash-based content addressing systems. Thus, IPLD provides a neutral, uniform way to address and link entities across different hash-based distributed systems—IPFS, git, Ethereum, and others.</p>
 <p>This opens up additional potential for a deterministic querying processor. Through use of an IPLD <em>adapter</em>, it will be possible to coordinate query results with other linked data structures like blockchain-based cryptocurrencies or git version histories. This data-format bridging opens up possilibities for connecting deterministic querying to other kinds of resources. For example, it should be posible to take advantage of Ethereum to create smart contracts for procuring data and fulfilling processing and analysis tasks. To take another example, an IPLD adapter could connect formal data schemas and test data with source code to process that data, referencing specific versions of source code stored using git.</p>
 <h1 id="storage-efficiency"><span class="header-section-number">5</span> Storage efficiency</h1>
@@ -358,7 +383,7 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <h1 id="references" class="unnumbered">References</h1>
 <div id="refs" class="references">
 <div id="ref-auer2014linked">
-<p><span style="font-variant: small-caps;">Auer, S., Bryl, V., and Tramp, S.</span> 2014. <em>Linked open data–Creating knowledge out of interlinked data: Results of the lOD2 project</em>. Springer. <a href="https://doi.org/10.1007/978-3-319-09846-3" class="uri">https://doi.org/10.1007/978-3-319-09846-3</a>.</p>
+<p><span style="font-variant: small-caps;">Auer, S., Bryl, V., and Tramp, S.</span> 2014. <em>Linked open data–creating knowledge out of interlinked data: Results of the lod2 project</em>. Springer. <a href="https://doi.org/10.1007/978-3-319-09846-3" class="uri">https://doi.org/10.1007/978-3-319-09846-3</a>.</p>
 </div>
 <div id="ref-aurora2007code">
 <p><span style="font-variant: small-caps;">Aurora, V.</span> 2007. The code monkey’s guide to cryptographic hashes for content-based addressing. <em>LinuxWorld</em>.</p>
@@ -367,7 +392,7 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <p><span style="font-variant: small-caps;">Baack, S.</span> 2015. Datafication and empowerment: How the open data movement re-articulates notions of democracy, participation, and journalism. <em>Big Data &amp; Society</em> <em>2</em>, 2. <a href="https://doi.org/10.1177/2053951715594634" class="uri">https://doi.org/10.1177/2053951715594634</a>.</p>
 </div>
 <div id="ref-baumgart2007s">
-<p><span style="font-variant: small-caps;">Baumgart, I. and Mies, S.</span> 2007. S/Kademlia: A practicable approach towards secure key-based routing. <em>International conference on parallel and distributed systems</em>, 1–8.</p>
+<p><span style="font-variant: small-caps;">Baumgart, I. and Mies, S.</span> 2007. S/kademlia: A practicable approach towards secure key-based routing. <em>International conference on parallel and distributed systems</em>, 1–8.</p>
 </div>
 <div id="ref-benet2014ipfs">
 <p><span style="font-variant: small-caps;">Benet, J.</span> 2014. IPFS – content addressed, versioned, P2P file system. <em>Computing Resources Repository</em> <em>arXiv:1407.3561</em>.</p>
@@ -391,13 +416,13 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <p><span style="font-variant: small-caps;">Crosas, M.</span> 2011. The dataverse network: An open-source application for sharing, discovering and preserving data. <em>D-Lib Magazine</em> <em>17</em>, 1/2. <a href="https://doi.org/10.1045/january2011-crosas" class="uri">https://doi.org/10.1045/january2011-crosas</a>.</p>
 </div>
 <div id="ref-crowston2008free">
-<p><span style="font-variant: small-caps;">Crowston, K., Wei, K., Howison, J., and Wiggins, A.</span> 2008. Free/Libre open-source software development: What we know and what we do not know. <em>ACM Comput. Surv.</em> <em>44</em>, 2, 7:1–7:35. <a href="https://doi.org/10.1145/2089125.2089127" class="uri">https://doi.org/10.1145/2089125.2089127</a>.</p>
+<p><span style="font-variant: small-caps;">Crowston, K., Wei, K., Howison, J., and Wiggins, A.</span> 2008. Free/libre open-source software development: What we know and what we do not know. <em>ACM Comput. Surv.</em> <em>44</em>, 2, 7:1–7:35. <a href="https://doi.org/10.1145/2089125.2089127" class="uri">https://doi.org/10.1145/2089125.2089127</a>.</p>
 </div>
 <div id="ref-pod2017resources">
 <p><span style="font-variant: small-caps;">Data, P.O.</span> 2017. <em>Metadata resources for schema v1.1</em>. Available on the World Wide Web at <a href="https://project-open-data.cio.gov/v1.1/metadata-resources/" class="uri">https://project-open-data.cio.gov/v1.1/metadata-resources/</a>.</p>
 </div>
 <div id="ref-elghandour2012restore">
-<p><span style="font-variant: small-caps;">Elghandour, I. and Aboulnaga, A.</span> 2012. ReStore: Reusing results of mapReduce jobs. <em>Proceedings of the VLDB Endowment</em> <em>5</em>, 6, 586–597. <a href="https://doi.org/10.14778/2168651.2168659" class="uri">https://doi.org/10.14778/2168651.2168659</a>.</p>
+<p><span style="font-variant: small-caps;">Elghandour, I. and Aboulnaga, A.</span> 2012. ReStore: Reusing results of mapreduce jobs. <em>Proceedings of the VLDB Endowment</em> <em>5</em>, 6, 586–597. <a href="https://doi.org/10.14778/2168651.2168659" class="uri">https://doi.org/10.14778/2168651.2168659</a>.</p>
 </div>
 <div id="ref-ferguson2014big">
 <p><span style="font-variant: small-caps;">Ferguson, A.R., Nielson, J.L., Cragin, M.H., Bandrowski, A.E., and Martone, M.E.</span> 2014. Big data from small data: Data-sharing in the ’long tail’ of neuroscience. <em>Nature Neuroscience</em> <em>17</em>, 11, 1442–1447. <a href="https://doi.org/10.1038/nn.3838" class="uri">https://doi.org/10.1038/nn.3838</a>.</p>
@@ -427,7 +452,7 @@ In the spirit of Open Data, it's important to acknowledge and support uses outsi
 <p><span style="font-variant: small-caps;">Heath, T. and Bizer, C.</span> 2011. <em>Linked data: Evolving the web into a global data space</em>. Morgan &amp; Claypool.</p>
 </div>
 <div id="ref-iso2016sql">
-<p><span style="font-variant: small-caps;"><span>ISO</span>/IEC JTC 1/SC 32</span>. 2016. <em>Information technology — database languages — SQL — part 1: Framework (SQL/Framework)</em>. International Organization for Standardization.</p>
+<p><span style="font-variant: small-caps;"><span>ISO</span>/IEC JTC 1/SC 32</span>. 2016. <em>Information technology — database languages — SQL — part 1: Framework (SQL/framework)</em>. International Organization for Standardization.</p>
 </div>
 <div id="ref-kansakar2016review">
 <p><span style="font-variant: small-caps;">Kansakar, P. and Hossain, F.</span> 2016. A review of applications of satellite earth observation data for global societal benefit and stewardship of planet earth. <em>Space Policy</em> <em>36</em>, 46–54. <a href="https://doi.org/10.1016/j.spacepol.2016.05.005" class="uri">https://doi.org/10.1016/j.spacepol.2016.05.005</a>.</p>
