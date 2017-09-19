@@ -1,6 +1,6 @@
 <?php
-$username = "research";
-$password = "the coolest";
+$username = "qri";
+$password = "whitepaper";
 $nonsense = "supercalifragilisticexpialidocious";
 
 if (isset($_COOKIE['PrivatePageLogin'])) {
