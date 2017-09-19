@@ -6,7 +6,7 @@ $nonsense = "supercalifragilisticexpialidocious";
 if (isset($_COOKIE['PrivatePageLogin'])) {
     if ($_COOKIE['PrivatePageLogin'] == md5($password.$nonsense)) {
         include_once("./v2.html");
-         exit;
+        exit;
     } else {
         echo "Bad Cookie.";
         exit;
@@ -28,3 +28,8 @@ if (isset($_GET['p']) && $_GET['p'] == "login") {
     }
 }
 ?>
+<form action="<?php echo $_SERVER['PHP_SELF']; ?>?p=login" method="post">
+<label><input type="text" name="user" id="user" /> Name</label><br />
+<label><input type="password" name="keypass" id="keypass" /> Password</label><br />
+<input type="submit" id="submit" value="Login" />
+</form>
