@@ -1,1 +1,2 @@
-<?php include_once("./v2.html"); ?>
+<?php include("/app/admin/password-protect.php"); ?>
+
