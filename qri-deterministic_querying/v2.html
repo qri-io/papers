@@ -114,7 +114,7 @@ maybe also compare this to "network is the database" -->
 <p>A fundamental goal of deterministic querying is to <em>maximize hash collisions</em> in content-addressed networks. The techniques below are aimed to ensure that datasets contain characteristics that resolve to equal hashes, creating a natural link with datasets thas share these characteristics. as well as semantically-equivalent queries for datasets, each resolve to the same hash even if created by different parties in different locations at different times. These shared characteristics form a common lexicon that peers in a distributed network can use to compare datasets, forming an internet-scale graph.</p>
 <p>To maximize these hash collisions, the process of describing datasets and queries must be made precise and consistent. To the greatest extent possible, content and queries that are the same must produce the same hash value; thus, definitions of data resources and queries must follow carefully-defined conventions, and alternative forms must be limited. We compensate for this rigidity by storing nonessential data separately, then connecting that to datasets and queries using separate mechanisms for linking and discovery. This leads to the four building blocks of deterministic querying: <code>Data</code>, <code>Dataset</code>, <code>Structure</code>, and <code>Query</code>.</p>
 <p align="center">
-<img src="graphics/data-dataset-structure-query.png">
+<img width="500pt" src="graphics/data-dataset-structure-query.svg">
 </p>
 <h2 id="data-and-structure"><span class="header-section-number">2.1</span> <code>Data</code> and <code>Structure</code></h2>
 <!--
@@ -159,7 +159,7 @@ This section could be called "schemas" or even "resources"; we avoid these terms
 <h2 id="dataset"><span class="header-section-number">2.2</span> <code>Dataset</code></h2>
 <p>A <code>Structure</code> describes the form of a <code>Data</code> object. The two are connected together, along with metadata about the <code>Data</code>, in a <code>Dataset</code> object.</p>
 <p align="center">
-<img src="graphics/dataset.png">
+<img width="150pt" src="graphics/dataset.svg">
 </p>
 <p>As illustrated above, a <code>Dataset</code> references one <code>Data</code> and one <code>Structure</code> object, and it also adds additional descriptive metadata. A <code>Dataset</code> must resolve to one and only one <code>Data</code> entity; this is accomplished by using the unique hashes of the associated <code>Data</code> and <code>Structure</code> objects. This separation of concerns achieves two important goals:</p>
 <ol style="list-style-type: decimal">
@@ -168,15 +168,15 @@ This section could be called "schemas" or even "resources"; we avoid these terms
 </ol>
 <p>To retain a trail of changes, <code>Dataset</code> contains a field called <code>previous</code> that references the hash of another <code>Dataset</code> object. This establishes a directed, acyclic graph (DAG) of changes to any component of a dataset, whether this is the metadata, or the <code>Data</code>, or the <code>Structure</code>. For example, when changes are made to metadata without changing the <code>Data</code> or its <code>Structure</code>, only the <code>Dataset</code> object needs to change:</p>
 <p align="center">
-<img src="graphics/metadata-changes.png">
+<img width="400pt" src="graphics/metadata-changes.svg">
 </p>
 <p>Conversely, if the <code>Data</code> changes but the <code>Structure</code> does not, the new <code>Dataset</code> object will reference the hash of a new <code>Data</code> object but point to the same <code>Structure</code>:</p>
 <p align="center">
-<img src="graphics/data-changes.png">
+<img width="400pt" src="graphics/data-changes.svg">
 </p>
 <p>Finally, if the <code>Structure</code> changes, the <code>Data</code> <em>may</em> need to change as well, if the structural change affects how the data is read or written. When the <code>Structure</code> change <em>does</em> require a <code>Data</code> change, it is a schema <em>migration</em>. A new <code>Dataset</code> object is created and it points to two new <code>Structure</code> and <code>Data</code> objects. This indicates that the underlying dataset has changed in such a way—either in structure or in values—that its hash signature is no longer the same.</p>
 <p align="center">
-<img src="graphics/structure-changes.png">
+<img width="400pt" src="graphics/structure-changes.svg">
 </p>
 <p>In each case above, the <code>Dataset</code> identifies the unique <code>Structure</code> object that defines the format of the data in the <code>Data</code> object(s), and the value of the <code>previous</code> has points to any previous <code>Dataset</code> definition that may have come before.</p>
 <p>There are additional fields in <code>Dataset</code>; these are discussed further below.</p>
@@ -189,7 +189,7 @@ This section could be called "schemas" or even "resources"; we avoid these terms
 <div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">SELECT</span> a.col_3, a.col_0, a.col_1, a.col_2 <span class="kw">FROM</span> a <span class="kw">WHERE</span> a.col_2 &gt; <span class="dv">1000</span></code></pre></div>
 <p>Now further suppose that we define the shape of <code>a</code> by writing an abstracted form of the <code>Structure</code> object, described above. This defines precisely the types of data values expected for each column in the query, as well as other properties of the data. And naturally, we can do the same for the <em>result</em> of the query: use another <code>Structure</code> object to describe the form of the data that the query will produce.</p>
 <p align="center">
-<img src="graphics/query.png">
+<img width="500pt" src="graphics/query.svg">
 </p>
 <p>This query is now independent of the semantics of the data: it operates on the form of the data and can be applied to any data that matches the description in the <code>Structure</code> of the input. What’s more, assuming that we define clear rules for writing these queries in a standard, consistent form, the same query will <em>always have the same hash value</em> even if it is regenerated by different processes at different times in different locations. And of course, the <code>Structure</code> objects for both the input and output are defined by their hashes.</p>
 <div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
@@ -212,7 +212,7 @@ This section could be called "schemas" or even "resources"; we avoid these terms
 <li><p>The query engine writes the results to IPFS as a <code>Dataset</code> object, writing the <code>Data</code>, <code>Query</code> and <code>Structure</code> hash references into the <code>Dataset</code>, and saving the output <code>Data</code> too.</p></li>
 </ol>
 <p align="center">
-<img src="graphics/query-processing.png">
+<img width="500pt" src="graphics/query-processing.svg">
 </p>
 <h2 id="query-output"><span class="header-section-number">2.5</span> Query output</h2>
 <p>The result of a query is another <code>Dataset</code> object and potentially a new <code>Data</code> object referenced by it. This form of <code>Dataset</code> makes use of a few additional fields. The example below illustrates a complete, mostly-dereferenced result (<code>resources.precip</code> dataset and <code>data</code> have been left as references for brevity).</p>
@@ -334,12 +334,12 @@ This section could be called "schemas" or even "resources"; we avoid these terms
 <h2 id="leveraging-the-properties-of-ipfs"><span class="header-section-number">5.1</span> Leveraging the properties of IPFS</h2>
 <p>IPFS partially solves this problem for us. An IPFS file store is actually a content-addressed store of file blocks—files are broken into a set of fixed-size blocks that are each content-addressed by hashes. A file is in reality a collection of references to hashed blocks:</p>
 <p align="center">
-<img src="graphics/merkle-dag.png">
+<img width="500pt" src="graphics/merkle.svg">
 </p>
 <p>Crucially, file blocks <em>can be shared</em>: after all, if two content blocks hash to the same hash value, their content is identical, which means a given IPFS file store can simply point to the common blocks instead of storing separate copies. Moreover, as with everything else in IPFS, the hashes are unique across the entire IPFS address space, and so file blocks—parts of files—can be spread across the network.</p>
 <p>This can be leveraged further in a deterministic querying system. In particular, we can take advantage of this feature to avoid duplication of data between slightly-altered files. Two files that have a similar-enough composition will be automatcally deduplicated upon addition through hash collision. In a simplified example, adding data to the end of a raw file will result in only a one-block addition, instead of fully duplicating the entire file. This is yet another benefit of using content addressing and the underlying IPFS technology.</p>
 <p align="center">
-<img width="35%" src="graphics/qri-deduplication.png">
+<img width="250pt" src="graphics/deduplicating.svg">
 </p>
 <h2 id="implementing-efficient-file-decomposition-strategies"><span class="header-section-number">5.2</span> Implementing efficient file decomposition strategies</h2>
 <p>An implementation of deterministic querying can be smarter about file storage, and additional steps can be taken to improve the rate of deduplication. Using IPLD adapters for common file formats, CSV, JSON, and other files stored with “rows” of entries can be broken into blocks along breaks between rows. By breaking down these blocks into logical parts, we increase the chance of deduplication between files. This can achieve much smaller storage overhead for similar dataset data.</p>
@@ -369,7 +369,7 @@ Deterministic querying promises new capabilities and powers, but it is in its ea
 <h1 id="references" class="unnumbered">References</h1>
 <div id="refs" class="references">
 <div id="ref-auer2014linked">
-<p><span style="font-variant: small-caps;">Auer, S., Bryl, V., and Tramp, S.</span> 2014. <em>Linked open data–creating knowledge out of interlinked data: Results of the lod2 project</em>. Springer. <a href="https://doi.org/10.1007/978-3-319-09846-3" class="uri">https://doi.org/10.1007/978-3-319-09846-3</a>.</p>
+<p><span style="font-variant: small-caps;">Auer, S., Bryl, V., and Tramp, S.</span> 2014. <em>Linked open data–Creating knowledge out of interlinked data: Results of the lOD2 project</em>. Springer. <a href="https://doi.org/10.1007/978-3-319-09846-3" class="uri">https://doi.org/10.1007/978-3-319-09846-3</a>.</p>
 </div>
 <div id="ref-aurora2007code">
 <p><span style="font-variant: small-caps;">Aurora, V.</span> 2007. The code monkey’s guide to cryptographic hashes for content-based addressing. <em>LinuxWorld</em>.</p>
@@ -378,7 +378,7 @@ Deterministic querying promises new capabilities and powers, but it is in its ea
 <p><span style="font-variant: small-caps;">Baack, S.</span> 2015. Datafication and empowerment: How the open data movement re-articulates notions of democracy, participation, and journalism. <em>Big Data &amp; Society</em> <em>2</em>, 2. <a href="https://doi.org/10.1177/2053951715594634" class="uri">https://doi.org/10.1177/2053951715594634</a>.</p>
 </div>
 <div id="ref-baumgart2007s">
-<p><span style="font-variant: small-caps;">Baumgart, I. and Mies, S.</span> 2007. S/kademlia: A practicable approach towards secure key-based routing. <em>International conference on parallel and distributed systems</em>, 1–8.</p>
+<p><span style="font-variant: small-caps;">Baumgart, I. and Mies, S.</span> 2007. S/Kademlia: A practicable approach towards secure key-based routing. <em>International conference on parallel and distributed systems</em>, 1–8.</p>
 </div>
 <div id="ref-benet2014ipfs">
 <p><span style="font-variant: small-caps;">Benet, J.</span> 2014. IPFS – content addressed, versioned, P2P file system. <em>Computing Resources Repository</em> <em>arXiv:1407.3561</em>.</p>
@@ -402,13 +402,13 @@ Deterministic querying promises new capabilities and powers, but it is in its ea
 <p><span style="font-variant: small-caps;">Crosas, M.</span> 2011. The dataverse network: An open-source application for sharing, discovering and preserving data. <em>D-Lib Magazine</em> <em>17</em>, 1/2. <a href="https://doi.org/10.1045/january2011-crosas" class="uri">https://doi.org/10.1045/january2011-crosas</a>.</p>
 </div>
 <div id="ref-crowston2008free">
-<p><span style="font-variant: small-caps;">Crowston, K., Wei, K., Howison, J., and Wiggins, A.</span> 2008. Free/libre open-source software development: What we know and what we do not know. <em>ACM Comput. Surv.</em> <em>44</em>, 2, 7:1–7:35. <a href="https://doi.org/10.1145/2089125.2089127" class="uri">https://doi.org/10.1145/2089125.2089127</a>.</p>
+<p><span style="font-variant: small-caps;">Crowston, K., Wei, K., Howison, J., and Wiggins, A.</span> 2008. Free/Libre open-source software development: What we know and what we do not know. <em>ACM Comput. Surv.</em> <em>44</em>, 2, 7:1–7:35. <a href="https://doi.org/10.1145/2089125.2089127" class="uri">https://doi.org/10.1145/2089125.2089127</a>.</p>
 </div>
 <div id="ref-pod2017resources">
 <p><span style="font-variant: small-caps;">Data, P.O.</span> 2017. <em>Metadata resources for schema v1.1</em>. Available on the World Wide Web at <a href="https://project-open-data.cio.gov/v1.1/metadata-resources/" class="uri">https://project-open-data.cio.gov/v1.1/metadata-resources/</a>.</p>
 </div>
 <div id="ref-elghandour2012restore">
-<p><span style="font-variant: small-caps;">Elghandour, I. and Aboulnaga, A.</span> 2012. ReStore: Reusing results of mapreduce jobs. <em>Proceedings of the VLDB Endowment</em> <em>5</em>, 6, 586–597. <a href="https://doi.org/10.14778/2168651.2168659" class="uri">https://doi.org/10.14778/2168651.2168659</a>.</p>
+<p><span style="font-variant: small-caps;">Elghandour, I. and Aboulnaga, A.</span> 2012. ReStore: Reusing results of mapReduce jobs. <em>Proceedings of the VLDB Endowment</em> <em>5</em>, 6, 586–597. <a href="https://doi.org/10.14778/2168651.2168659" class="uri">https://doi.org/10.14778/2168651.2168659</a>.</p>
 </div>
 <div id="ref-ferguson2014big">
 <p><span style="font-variant: small-caps;">Ferguson, A.R., Nielson, J.L., Cragin, M.H., Bandrowski, A.E., and Martone, M.E.</span> 2014. Big data from small data: Data-sharing in the ’long tail’ of neuroscience. <em>Nature Neuroscience</em> <em>17</em>, 11, 1442–1447. <a href="https://doi.org/10.1038/nn.3838" class="uri">https://doi.org/10.1038/nn.3838</a>.</p>
@@ -438,7 +438,7 @@ Deterministic querying promises new capabilities and powers, but it is in its ea
 <p><span style="font-variant: small-caps;">Heath, T. and Bizer, C.</span> 2011. <em>Linked data: Evolving the web into a global data space</em>. Morgan &amp; Claypool.</p>
 </div>
 <div id="ref-iso2016sql">
-<p><span style="font-variant: small-caps;"><span>ISO</span>/IEC JTC 1/SC 32</span>. 2016. <em>Information technology — database languages — SQL — part 1: Framework (SQL/framework)</em>. International Organization for Standardization.</p>
+<p><span style="font-variant: small-caps;"><span>ISO</span>/IEC JTC 1/SC 32</span>. 2016. <em>Information technology — database languages — SQL — part 1: Framework (SQL/Framework)</em>. International Organization for Standardization.</p>
 </div>
 <div id="ref-kansakar2016review">
 <p><span style="font-variant: small-caps;">Kansakar, P. and Hossain, F.</span> 2016. A review of applications of satellite earth observation data for global societal benefit and stewardship of planet earth. <em>Space Policy</em> <em>36</em>, 46–54. <a href="https://doi.org/10.1016/j.spacepol.2016.05.005" class="uri">https://doi.org/10.1016/j.spacepol.2016.05.005</a>.</p>
