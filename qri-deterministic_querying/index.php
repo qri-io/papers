@@ -1,2 +1,2 @@
-<?php include("/app/admin/password-protect.php"); ?>
+<?php include("admin/password-protect.php"); ?>
 
