@@ -5,8 +5,8 @@
 
 # The following are likely to change.
 
-main      = v2.md
-bib       = v2.bibtex
+main      = deterministic_querying.md
+bib       = deterministic_querying.bibtex
 template  = templates/GitHub.html5
 bib_style = styles/modified-acm-siggraph.csl
 

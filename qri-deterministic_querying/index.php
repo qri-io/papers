@@ -5,7 +5,7 @@ $nonsense = "supercalifragilisticexpialidocious";
 
 if (isset($_COOKIE['PrivatePageLogin'])) {
     if ($_COOKIE['PrivatePageLogin'] == md5($password.$nonsense)) {
-        include_once("./v2.html");
+        include_once("./deterministic_querying.html");
         exit;
     } else {
         echo "Bad Cookie.";
