@@ -14,6 +14,13 @@ September 2017<br/>
 
 The current infrastructure that underlies the distribution and processing of data over the Internet has enabled dramatic advances in a wide variety of human activities. Recent trends promoting open data promise even greater benefits as the number and variety of networked datasets grows.  However, while current technologies and architectures obviously do work, they also show signs of systemic inefficiencies that impede effective large-scale discovery, distribution, preservation and reuse of datasets. An important source of inefficiency is rooted in the database-centeric architecture that underlies much of data processing on the Internet today. The ongoing transition to a content-addressed permanent web offers an opportunity to replace certain software architecture patterns with alternatives that are more efficient and scale more effectively.  We introduce one such new pattern, _deterministic querying_, that combines formalized query definitions, formalized data descriptions, linked metadata, hashing, and a content-addressed file system.  The result supports database-free reuse of data and data processing results---and can do so on the scale of the global Internet.
 
+<div>
+<p align="center">
+<b>Table of Contents</b><br>
+$toc
+</p>
+</div>
+
 # Introduction
 
 Open data is a boon to research and progress [@murray2008open; @piwowar2013data; @lowndes2017our; @gewin2016data; @miguel2014promoting].  Though exact numbers are unavailable for the amount of data stored around the world, it is clear it must already be stupendous.  Measured in terms of web pages, the best estimate in mid-2017 puts the number of visible web pages at nearly 50&nbsp;billion [@vandenbosch2016estimating], while in terms of data transmitted over the Internet, global IP traffic reached 1.2&nbsp;zettabytes in 2016 and is predicted to reach 3.3 zettabytes per year by 2021 [@cisco2017zettabyte].  The continuing growth of data being made available on the Internet promises a windfall of benefits in many areas, enabling new discoveries, powering new innovations, lowering costs, and increasing transparency [@martin2017opening; @mckiernan2016open; @madan2017advances; @ferguson2014big; @west2014open; @kansakar2016review].
