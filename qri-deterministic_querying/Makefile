@@ -12,25 +12,36 @@ bib_style = styles/modified-acm-siggraph.csl
 
 # The remainder below is not likely to need changes under most circumstances.
 
-pandoc_args = \
+pandoc_doc_args = \
 	-f markdown -t html \
 	--template=$(template) \
 	--csl=$(bib_style) \
 	--bibliography $(bib) \
         --metadata link-citations=true \
-	--email-obfuscation=none \
 	--number-sections \
+	--email-obfuscation=none \
 	--mathjax \
+	--standalone \
+	--smart
+
+pandoc_toc_args = \
+	-t html \
+	--template=templates/toc.html5 \
+	--toc \
+	--number-sections \
 	--standalone \
 	--smart
 
 output = $(main:.md=.html)
 
 default $(output): $(main) $(bib)
-	pandoc $(pandoc_args) $(main) -o $(output)
+	pandoc $(pandoc_toc_args) $(main) -o toc.tmp
+	pandoc $(pandoc_doc_args) $(main) -o $(output).tmp
+	cat $(output).tmp | toc=`cat toc.tmp` envsubst '$$toc' > $(output)
+	rm -f toc.tmp $(output).tmp
 
 autorefresh:;
-	((ls $(main) $(bib) | entr make reload) &)
+	((ls $(main) $(bib) $(template) | entr make reload) &)
 
 reload:;
 	make
